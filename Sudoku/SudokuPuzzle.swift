@@ -25,14 +25,32 @@ struct SudokuPuzzle {
     ]
     
     let level: Int
+    let rows: [[SudokuCell]]
+    
+    let checkerboardLightColor = CGColor( red: 1, green: 1, blue: 1, alpha: 1 )
+    let checkerboardDarkColor  = CGColor( red: 0.95, green: 0.95, blue: 0.95, alpha: 1 )
+    let lineColor = CGColor( red: 0, green: 0, blue: 0, alpha: 1 )
+    let textColor = CGColor( red: 0, green: 0, blue: 0, alpha: 1 )
+    let fatLine      = 5
+    let thinLine     = 3
+    let cellMargin   = 5
+    let miniCellSize = 20
+    let cellSize: Int
+    let blockSize: Int
+    let size: Int
+
+    init( level: Int ) {
+        let limit = level * level
+        
+        self.level = level
+        rows = Array( repeating: Array( repeating: SudokuCell(), count: limit ), count: limit )
+        
+        cellSize = cellMargin * ( level + 1 ) + miniCellSize * level
+        blockSize = level * cellSize + ( level - 1 ) * thinLine
+        size = level * blockSize + ( level + 1 ) * fatLine
+    }
     
     var image: NSImage {
-        let fatLine = 5
-        let thinLine = 3
-        let cellSize = 5 * ( level + 1 ) + 20 * level
-        let blockSize = level * cellSize + ( level - 1 ) * thinLine
-        let size = level * blockSize + ( level + 1 ) * fatLine
-        
         let nsImage = NSImage( size: NSSize( width: size, height: size ) )
         let imageRep = NSBitmapImageRep(
             bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size, bitsPerSample: 8,
@@ -51,13 +69,9 @@ struct SudokuPuzzle {
             bitmapInfo: cgImage.bitmapInfo.rawValue
         )!
 
-        let white = CGColor( red: 1, green: 1, blue: 1, alpha: 1 )
-        let black = CGColor( red: 0, green: 0, blue: 0, alpha: 1 )
-        let grey  = CGColor( red: 0.95, green: 0.95, blue: 0.95, alpha: 1 )
-
-        context.setFillColor( white )
+        context.setFillColor( checkerboardLightColor )
         context.fill( CGRect( x: 0, y: 0, width: size, height: size ) )
-        context.setFillColor( grey )
+        context.setFillColor( checkerboardDarkColor )
         for groupRow in 0 ..< level {
             for groupCol in stride( from: groupRow % 2 == 1 ? 0 : 1, to: level, by: 2 ) {
                 let x = groupCol * blockSize + fatLine * ( groupCol + 1 )
@@ -66,7 +80,7 @@ struct SudokuPuzzle {
             }
         }
         
-        context.setStrokeColor( black )
+        context.setStrokeColor( lineColor )
         context.setLineWidth( CGFloat( fatLine ) )
         let fatLineSpacing = level * cellSize + ( level - 1 ) * thinLine + fatLine
         for base in stride( from: fatLine / 2, to: size, by: fatLineSpacing ) {

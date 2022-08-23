@@ -23,6 +23,14 @@ struct ContentView: View {
                 Text( "Select your puzzle size" )
             }
             .onAppear() { needsLevel = $document.wrappedValue.needsLevel }
+            .background( LinearGradient(
+                gradient: Gradient(
+                    colors: [ .blue.opacity( 0.25 ), .cyan.opacity( 0.25 ), .green.opacity( 0.25 ) ]
+                ),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+                )
+            )
     }
 }
 
