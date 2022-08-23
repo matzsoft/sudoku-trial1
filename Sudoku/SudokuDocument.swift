@@ -16,6 +16,33 @@ extension UTType {
 
 struct SudokuDocument: FileDocument {
     var text: String
+    var puzzle: SudokuPuzzle?
+    
+    var level: Int? {
+        get { puzzle?.level }
+        set { puzzle = SudokuPuzzle( level: newValue! ) }
+    }
+    var needsLevel: Bool { level == nil }
+    var levelDescription: String {
+        guard let level = level else {
+            return "No level for the puzzle."
+        }
+
+        switch level {
+        case 3:
+            return "9x9"
+        case 4:
+            return "16x16"
+        default:
+            return "Unknown puzzle level \(level)."
+        }
+    }
+    var image: NSImage {
+        guard let puzzle = puzzle else {
+            return NSImage( named: NSImage.cautionName )!
+        }
+        return puzzle.image
+    }
 
     init(text: String = "Hello, world!") {
         self.text = text

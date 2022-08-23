@@ -13,5 +13,18 @@ struct SudokuApp: App {
         DocumentGroup(newDocument: SudokuDocument()) { file in
             ContentView(document: file.$document)
         }
+//        .commands {
+//            CommandGroup( replacing: .newItem ) {
+//                Menu( "New" ) {
+//                    Button( "9x9", action: {} )
+//                        .keyboardShortcut( "n" )
+//                    Button( "16x16", action: {} )
+//                        .keyboardShortcut( "n", modifiers: [ .command, .shift ] )
+//                }
+//                Button( "Open", action: {} )
+//                    .keyboardShortcut( "o" )
+//                Button( "Open Recent...", action: {} )
+//            }
+//        }
     }
 }
