@@ -10,4 +10,28 @@ import Foundation
 class SudokuCell {
     var solved: Int?
     var penciled: [Int] = []
+    let row: Int
+    let col: Int
+
+    init( solved: Int? = nil, penciled: [Int] = [], row: Int, col: Int) {
+        self.solved = solved
+        self.penciled = penciled
+        self.row = row
+        self.col = col
+    }
+    
+    func draw( puzzle: SudokuPuzzle, context: CGContext ) -> Void {
+        if let solved = solved {
+            // Draw the solved number
+            return
+        }
+        
+        if !penciled.isEmpty {
+            // Draw all the pencilled.
+            return
+        }
+        
+        //Normally just return, but for debugging do something.
+        return
+    }
 }

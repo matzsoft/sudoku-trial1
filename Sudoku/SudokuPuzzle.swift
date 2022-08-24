@@ -43,14 +43,19 @@ struct SudokuPuzzle {
         let limit = level * level
         
         self.level = level
-        rows = Array( repeating: Array( repeating: SudokuCell(), count: limit ), count: limit )
-        
         cellSize = cellMargin * ( level + 1 ) + miniCellSize * level
         blockSize = level * cellSize + ( level - 1 ) * thinLine
         size = level * blockSize + ( level + 1 ) * fatLine
+        
+        rows = ( 0 ..< limit ).map { row in
+            ( 0 ..< limit ).map { col in
+                SudokuCell( row: row, col: col )
+            }
+        }
     }
     
     var image: NSImage {
+        // Create the image to draw in.
         let nsImage = NSImage( size: NSSize( width: size, height: size ) )
         let imageRep = NSBitmapImageRep(
             bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size, bitsPerSample: 8,
@@ -69,6 +74,7 @@ struct SudokuPuzzle {
             bitmapInfo: cgImage.bitmapInfo.rawValue
         )!
 
+        // Draw the checkerboard pattern
         context.setFillColor( checkerboardLightColor )
         context.fill( CGRect( x: 0, y: 0, width: size, height: size ) )
         context.setFillColor( checkerboardDarkColor )
@@ -80,6 +86,7 @@ struct SudokuPuzzle {
             }
         }
         
+        // Draw the fat lines
         context.setStrokeColor( lineColor )
         context.setLineWidth( CGFloat( fatLine ) )
         let fatLineSpacing = level * cellSize + ( level - 1 ) * thinLine + fatLine
@@ -91,6 +98,7 @@ struct SudokuPuzzle {
         }
         context.strokePath()
         
+        // Draw the thin lines
         context.setLineWidth( CGFloat( thinLine ) )
         for index in 0 ..< level * level {
             if !index.isMultiple( of: level ) {
@@ -105,6 +113,21 @@ struct SudokuPuzzle {
         }
         context.strokePath()
 
+        // Draw the cell contents
+        for cell in rows.flatMap( { $0 } ) {
+            let groupRow = cell.row / level
+            let groupCol = cell.col / level
+            let groupX = groupCol * blockSize + fatLine * ( groupCol + 1 )
+            let groupY = groupRow * blockSize + fatLine * ( groupRow + 1 )
+            let cellX  = CGFloat( groupX + ( cell.col % level ) * ( cellSize + thinLine ) )
+            let cellY  = CGFloat( groupY + ( cell.row % level ) * ( cellSize + thinLine ) )
+            
+            context.saveGState()
+            context.translateBy( x: cellX, y: cellY )
+            cell.draw( puzzle: self, context: context )
+            context.restoreGState()
+        }
+        
         let final = context.makeImage()!
         return NSImage( cgImage: final, size: NSSize(width: size / 2, height: size / 2 ) )
     }
