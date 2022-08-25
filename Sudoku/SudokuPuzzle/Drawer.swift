@@ -120,17 +120,7 @@ extension SudokuPuzzle {
 
             // Draw the cell contents
             for cell in puzzle.cells {
-                let groupRow = cell.row / level
-                let groupCol = cell.col / level
-                let groupX = groupCol * blockSize + Drawer.fatLine * ( groupCol + 1 )
-                let groupY = groupRow * blockSize + Drawer.fatLine * ( groupRow + 1 )
-                let cellX  = CGFloat( groupX + ( cell.col % level ) * ( cellSize + Drawer.thinLine ) )
-                let cellY  = CGFloat( groupY + ( cell.row % level ) * ( cellSize + Drawer.thinLine ) )
-                
-                context.saveGState()
-                context.translateBy( x: cellX, y: cellY )
                 draw( cell: cell, context: context )
-                context.restoreGState()
             }
             
             let final = context.makeImage()!
@@ -144,6 +134,17 @@ extension SudokuPuzzle {
                 y: Drawer.cellMargin + penciled / levelInfo.level * skipOver,
                 width: Drawer.miniCellSize, height: Drawer.miniCellSize
             )
+        }
+        
+        func moveTo( cell: Cell, context: CGContext ) -> Void {
+            let groupRow = cell.row / levelInfo.level
+            let groupCol = cell.col / levelInfo.level
+            let groupX = groupCol * blockSize + Drawer.fatLine * ( groupCol + 1 )
+            let groupY = groupRow * blockSize + Drawer.fatLine * ( groupRow + 1 )
+            let cellX  = CGFloat( groupX + ( cell.col % levelInfo.level ) * ( cellSize + Drawer.thinLine ) )
+            let cellY  = CGFloat( groupY + ( cell.row % levelInfo.level ) * ( cellSize + Drawer.thinLine ) )
+            
+            context.translateBy( x: cellX, y: cellY )
         }
         
         func draw( symbol: Character, rect: CGRect, font: CFDictionary, context: CGContext ) -> Void {
@@ -169,18 +170,24 @@ extension SudokuPuzzle {
                     width: cellInteriorSize, height: cellInteriorSize
                 )
                 
+                context.saveGState()
+                moveTo( cell: cell, context: context )
                 draw( symbol: symbol, rect: rect, font: solvedFont, context: context )
+                context.restoreGState()
                 return
             }
             
             if !cell.penciled.isEmpty {
                 // Draw all the penciled.
+                context.saveGState()
+                moveTo( cell: cell, context: context )
                 for penciled in cell.penciled {
                     let symbol = levelInfo.symbol( from: penciled ) ?? "?"
                     let rect   = penciledRect( penciled: penciled )
 
                     draw( symbol: symbol, rect: rect, font: Drawer.penciledFont, context: context )
                 }
+                context.restoreGState()
                 return
             }
         }
