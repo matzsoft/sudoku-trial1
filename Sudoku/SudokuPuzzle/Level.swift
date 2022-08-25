@@ -22,7 +22,7 @@ extension SudokuPuzzle {
         func index( from symbol: Character ) -> Int? {
             if level < 4 {
                 guard let index = Int( String( symbol ) ) else { return nil }
-                return index
+                return index - 1
             }
             
             guard let index = Int( String( symbol ), radix: limit ) else { return nil }
@@ -30,9 +30,9 @@ extension SudokuPuzzle {
         }
         
         func symbol( from index: Int ) -> Character? {
-            guard 0 < index && index < limit else { return nil }
+            guard 0 <= index && index < limit else { return nil }
             if level < 4 {
-                return Character( String( index ) )
+                return Character( String( index + 1 ) )
             }
             
             return Character( String( index, radix: limit, uppercase: true ) )

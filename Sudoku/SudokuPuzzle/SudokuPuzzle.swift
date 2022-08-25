@@ -34,5 +34,11 @@ struct SudokuPuzzle {
                 Cell( row: row, col: col )
             }
         }
+        
+        // TODO: The following is for debugging cell drawing and should be removed.
+        rows[1][1].solved = 4
+        rows[2][5].solved = 2
+        rows[4][2].penciled = [ 0, 4, 8 ]
+        rows[7][6].penciled = [ 1, 3, 5, 7 ]
     }
 }

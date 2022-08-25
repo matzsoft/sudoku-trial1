@@ -7,6 +7,7 @@
 
 import Foundation
 import AppKit
+import CoreText
 
 extension SudokuPuzzle {
     struct Drawer {
@@ -22,7 +23,26 @@ extension SudokuPuzzle {
         let cellSize: Int
         let blockSize: Int
         let size: Int
+        let solvedFont: CFDictionary
+        let penciledFont: CFDictionary
 
+        static func setupFontAttributes( color: CGColor, fontSize: CGFloat ) -> CFDictionary {
+            let fontAttributes = [
+                String( kCTFontFamilyNameAttribute ) : "Arial",
+                String( kCTFontStyleNameAttribute )  : "Regular",
+                String( kCTFontSizeAttribute )       : fontSize
+                ] as CFDictionary
+            let fontDescriptor = CTFontDescriptorCreateWithAttributes( fontAttributes )
+            let font           = CTFontCreateWithFontDescriptor( fontDescriptor, 0.0, nil )
+            
+            let attributes = [
+                String( kCTFontAttributeName )            : font,
+                String( kCTForegroundColorAttributeName ) : color
+            ] as CFDictionary
+            
+            return attributes
+        }
+        
         init( levelInfo: Level ) {
             let level = levelInfo.level
             
@@ -31,6 +51,10 @@ extension SudokuPuzzle {
             cellSize = cellMargin * ( level + 1 ) + miniCellSize * level
             blockSize = level * cellSize + ( level - 1 ) * thinLine
             size = level * blockSize + ( level + 1 ) * fatLine
+            solvedFont = Drawer.setupFontAttributes(
+                color: textColor, fontSize: CGFloat( cellSize - 2 * cellMargin ) )
+            penciledFont = Drawer.setupFontAttributes(
+                color: textColor, fontSize: CGFloat( miniCellSize ) )
         }
         
         func image( puzzle: SudokuPuzzle ) -> NSImage {
@@ -112,14 +136,53 @@ extension SudokuPuzzle {
             return NSImage( cgImage: final, size: NSSize(width: size / 2, height: size / 2 ) )
         }
         
+        func cellRect() -> CGRect {
+            CGRect(
+                x: cellMargin, y: cellMargin,
+                width: cellSize - 2 * cellMargin, height: cellSize - 2 * cellMargin
+            )
+        }
+        
+        func penciledRect( penciled: Int ) -> CGRect {
+            let rect = cellRect()
+            
+            return CGRect(
+                x: Int( rect.minX ) + penciled % levelInfo.level * ( miniCellSize + cellMargin ),
+                y: Int( rect.minY ) + penciled / levelInfo.level * ( miniCellSize + cellMargin ),
+                width: miniCellSize, height: miniCellSize
+            )
+        }
+        
         func draw( cell: Cell, context: CGContext ) -> Void {
             if let solved = cell.solved {
                 // Draw the solved number
+                let rect = cellRect()
+                let symbol = String( levelInfo.symbol( from: solved ) ?? "?" ) as CFString
+                let attrString = CFAttributedStringCreate( kCFAllocatorDefault, symbol, solvedFont )
+                let line       = CTLineCreateWithAttributedString( attrString! )
+                let textSize   = CTLineGetImageBounds( line, context )
+                let x          = rect.minX + ( rect.width - textSize.width ) / 2
+                let y          = rect.minY + ( rect.height - textSize.height ) / 2
+
+                context.textPosition = CGPoint( x: x, y: y)
+                CTLineDraw( line, context )
                 return
             }
             
             if !cell.penciled.isEmpty {
-                // Draw all the pencilled.
+                // Draw all the penciled.
+                for penciled in cell.penciled {
+                    let rect = penciledRect( penciled: penciled )
+                    let symbol = String( levelInfo.symbol( from: penciled ) ?? "?" ) as CFString
+                    let attrString = CFAttributedStringCreate( kCFAllocatorDefault, symbol, penciledFont )
+                    let line       = CTLineCreateWithAttributedString( attrString! )
+                    let textSize   = CTLineGetImageBounds( line, context )
+                    let x          = rect.minX + ( rect.width - textSize.width ) / 2
+                    let y          = rect.minY + ( rect.height - textSize.height ) / 2
+
+                    context.textPosition = CGPoint( x: x, y: y)
+                    CTLineDraw( line, context )
+                }
                 return
             }
         }
