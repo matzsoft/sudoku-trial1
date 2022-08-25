@@ -16,7 +16,7 @@ struct ContentView: View {
             .padding()
             .confirmationDialog( "Puzzle Level", isPresented: $needsLevel ) {
                 ForEach( SudokuPuzzle.supportedLevels, id: \.self ) { level in
-                    Button( level.label ) { $document.wrappedValue.level = level.level; needsLevel = false }
+                    Button( level.label ) { $document.wrappedValue.level = level; needsLevel = false }
                 }
             }
             message: {

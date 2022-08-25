@@ -12,19 +12,46 @@ struct SudokuPuzzle {
     struct Level: Hashable {
         internal init( level: Int, label: String ) {
             self.level = level
+            self.limit = level * level
             self.label = label
         }
                 
         let level: Int
+        let limit: Int
         let label: String
+        
+        func index( from symbol: Character ) -> Int? {
+            if level < 4 {
+                guard let index = Int( String( symbol ) ) else { return nil }
+                return index
+            }
+            
+            guard let index = Int( String( symbol ), radix: limit ) else { return nil }
+            return index
+        }
+        
+        func symbol( from index: Int ) -> Character? {
+            guard 0 < index && index < limit else { return nil }
+            if level < 4 {
+                return Character( String( index ) )
+            }
+            
+            return Character( String( index, radix: limit, uppercase: true ) )
+        }
+        
+        func isValid( symbol: Character ) -> Bool {
+            return index( from: symbol ) != nil
+        }
     }
     
     static let supportedLevels = [
-        Level(level: 3, label: "9x9" ),
-        Level(level: 4, label: "16x16")
+        Level( level: 3, label: "9x9" ),
+        Level( level: 4, label: "16x16")
     ]
     
+    let levelInfo: Level
     let level: Int
+    let limit: Int
     let rows: [[SudokuCell]]
     
     let checkerboardLightColor = CGColor( red: 1, green: 1, blue: 1, alpha: 1 )
@@ -39,16 +66,17 @@ struct SudokuPuzzle {
     let blockSize: Int
     let size: Int
 
-    init( level: Int ) {
-        let limit = level * level
-        
-        self.level = level
+    init( levelInfo: Level ) {
+        self.levelInfo = levelInfo
+        level = levelInfo.level
+        limit = levelInfo.limit
+
         cellSize = cellMargin * ( level + 1 ) + miniCellSize * level
         blockSize = level * cellSize + ( level - 1 ) * thinLine
         size = level * blockSize + ( level + 1 ) * fatLine
         
-        rows = ( 0 ..< limit ).map { row in
-            ( 0 ..< limit ).map { col in
+        rows = ( 0 ..< levelInfo.limit ).map { row in
+            ( 0 ..< levelInfo.limit ).map { col in
                 SudokuCell( row: row, col: col )
             }
         }

@@ -18,9 +18,9 @@ struct SudokuDocument: FileDocument {
     var text: String
     var puzzle: SudokuPuzzle?
     
-    var level: Int? {
-        get { puzzle?.level }
-        set { puzzle = SudokuPuzzle( level: newValue! ) }
+    var level: SudokuPuzzle.Level? {
+        get { puzzle?.levelInfo }
+        set { puzzle = SudokuPuzzle( levelInfo: newValue! ) }
     }
     var needsLevel: Bool { level == nil }
     var levelDescription: String {
@@ -28,14 +28,7 @@ struct SudokuDocument: FileDocument {
             return "No level for the puzzle."
         }
 
-        switch level {
-        case 3:
-            return "9x9"
-        case 4:
-            return "16x16"
-        default:
-            return "Unknown puzzle level \(level)."
-        }
+        return level.label
     }
     var image: NSImage {
         guard let puzzle = puzzle else {
