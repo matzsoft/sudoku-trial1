@@ -17,11 +17,11 @@ struct SudokuPuzzle {
     let levelInfo: Level
     let level: Int
     let limit: Int
-    let rows: [[SudokuCell]]
+    let rows: [[Cell]]
     let drawer: Drawer
     
     var image: NSImage { drawer.image( puzzle: self ) }
-    var cells: [SudokuCell] { rows.flatMap { $0 } }
+    var cells: [Cell] { rows.flatMap { $0 } }
     
     init( levelInfo: Level ) {
         self.levelInfo = levelInfo
@@ -31,7 +31,7 @@ struct SudokuPuzzle {
         
         rows = ( 0 ..< levelInfo.limit ).map { row in
             ( 0 ..< levelInfo.limit ).map { col in
-                SudokuCell( row: row, col: col )
+                Cell( row: row, col: col )
             }
         }
     }

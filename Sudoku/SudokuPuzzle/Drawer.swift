@@ -112,7 +112,7 @@ extension SudokuPuzzle {
             return NSImage( cgImage: final, size: NSSize(width: size / 2, height: size / 2 ) )
         }
         
-        func draw( cell: SudokuCell, context: CGContext ) -> Void {
+        func draw( cell: Cell, context: CGContext ) -> Void {
             if let solved = cell.solved {
                 // Draw the solved number
                 return
