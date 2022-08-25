@@ -19,19 +19,4 @@ class SudokuCell {
         self.row = row
         self.col = col
     }
-    
-    func draw( puzzle: SudokuPuzzle, context: CGContext ) -> Void {
-        if let solved = solved {
-            // Draw the solved number
-            return
-        }
-        
-        if !penciled.isEmpty {
-            // Draw all the pencilled.
-            return
-        }
-        
-        //Normally just return, but for debugging do something.
-        return
-    }
 }

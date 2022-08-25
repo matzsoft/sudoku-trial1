@@ -104,12 +104,24 @@ extension SudokuPuzzle {
                 
                 context.saveGState()
                 context.translateBy( x: cellX, y: cellY )
-                cell.draw( puzzle: puzzle, context: context )
+                draw( cell: cell, context: context )
                 context.restoreGState()
             }
             
             let final = context.makeImage()!
             return NSImage( cgImage: final, size: NSSize(width: size / 2, height: size / 2 ) )
+        }
+        
+        func draw( cell: SudokuCell, context: CGContext ) -> Void {
+            if let solved = cell.solved {
+                // Draw the solved number
+                return
+            }
+            
+            if !cell.penciled.isEmpty {
+                // Draw all the pencilled.
+                return
+            }
         }
     }
 }
