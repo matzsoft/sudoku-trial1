@@ -17,6 +17,8 @@
 		DD52ABA928B1E2EF0063F450 /* SudokuUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD52ABA828B1E2EF0063F450 /* SudokuUITestsLaunchTests.swift */; };
 		DD52ABB628B408500063F450 /* SudokuPuzzle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD52ABB528B408500063F450 /* SudokuPuzzle.swift */; };
 		DD52ABB828B498680063F450 /* SudokuCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD52ABB728B498680063F450 /* SudokuCell.swift */; };
+		DD52ABBA28B733A40063F450 /* SudokuPuzzleDrawer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD52ABB928B733A40063F450 /* SudokuPuzzleDrawer.swift */; };
+		DD52ABBC28B7393D0063F450 /* SudokuPuzzzleLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD52ABBB28B7393D0063F450 /* SudokuPuzzzleLevel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +54,8 @@
 		DD52ABA828B1E2EF0063F450 /* SudokuUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SudokuUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		DD52ABB528B408500063F450 /* SudokuPuzzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SudokuPuzzle.swift; sourceTree = "<group>"; };
 		DD52ABB728B498680063F450 /* SudokuCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SudokuCell.swift; sourceTree = "<group>"; };
+		DD52ABB928B733A40063F450 /* SudokuPuzzleDrawer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SudokuPuzzleDrawer.swift; sourceTree = "<group>"; };
+		DD52ABBB28B7393D0063F450 /* SudokuPuzzzleLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SudokuPuzzzleLevel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,6 +111,8 @@
 				DD52ABB728B498680063F450 /* SudokuCell.swift */,
 				DD52AB8928B1E2EE0063F450 /* SudokuDocument.swift */,
 				DD52ABB528B408500063F450 /* SudokuPuzzle.swift */,
+				DD52ABB928B733A40063F450 /* SudokuPuzzleDrawer.swift */,
+				DD52ABBB28B7393D0063F450 /* SudokuPuzzzleLevel.swift */,
 				DD52AB8D28B1E2EF0063F450 /* Assets.xcassets */,
 				DD52AB9228B1E2EF0063F450 /* Info.plist */,
 				DD52AB9328B1E2EF0063F450 /* Sudoku.entitlements */,
@@ -271,10 +277,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				DD52AB8828B1E2EE0063F450 /* SudokuApp.swift in Sources */,
+				DD52ABBA28B733A40063F450 /* SudokuPuzzleDrawer.swift in Sources */,
 				DD52AB8A28B1E2EE0063F450 /* SudokuDocument.swift in Sources */,
 				DD52ABB628B408500063F450 /* SudokuPuzzle.swift in Sources */,
 				DD52ABB828B498680063F450 /* SudokuCell.swift in Sources */,
 				DD52AB8C28B1E2EE0063F450 /* ContentView.swift in Sources */,
+				DD52ABBC28B7393D0063F450 /* SudokuPuzzzleLevel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
