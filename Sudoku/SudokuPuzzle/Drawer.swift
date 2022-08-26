@@ -21,7 +21,6 @@ extension SudokuPuzzle {
         static let miniCellSize = 20
         static let penciledFont = setupFontAttributes( color: textColor, fontSize: CGFloat( miniCellSize ) )
 
-        let levelInfo: Level
         let cellSize: Int
         let blockSize: Int
         let size: Int
@@ -48,8 +47,6 @@ extension SudokuPuzzle {
         init( levelInfo: Level ) {
             let level = levelInfo.level
             
-            self.levelInfo = levelInfo
-
             cellSize = Drawer.cellMargin * ( level + 1 ) + Drawer.miniCellSize * level
             blockSize = level * cellSize + ( level - 1 ) * Drawer.thinLine
             size = level * blockSize + ( level + 1 ) * Drawer.fatLine
@@ -60,7 +57,7 @@ extension SudokuPuzzle {
         
         func image( puzzle: SudokuPuzzle ) -> NSImage {
             // Create the image to draw in.
-            let level = levelInfo.level
+            let level = puzzle.level
             let nsImage = NSImage( size: NSSize( width: size, height: size ) )
             let imageRep = NSBitmapImageRep(
                 bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size, bitsPerSample: 8,
@@ -79,18 +76,6 @@ extension SudokuPuzzle {
                 bitmapInfo: cgImage.bitmapInfo.rawValue
             )!
 
-            // Draw the checkerboard pattern
-            context.setFillColor( Drawer.checkerboardLightColor )
-            context.fill( CGRect( x: 0, y: 0, width: size, height: size ) )
-            context.setFillColor( Drawer.checkerboardDarkColor )
-            for groupRow in 0 ..< level {
-                for groupCol in stride( from: groupRow % 2 == 1 ? 0 : 1, to: level, by: 2 ) {
-                    let x = groupCol * blockSize + Drawer.fatLine * ( groupCol + 1 )
-                    let y = groupRow * blockSize + Drawer.fatLine * ( groupRow + 1 )
-                    context.fill( CGRect( x: x, y: y, width: blockSize, height: blockSize ) )
-                }
-            }
-            
             // Draw the fat lines
             context.setStrokeColor( Drawer.lineColor )
             context.setLineWidth( CGFloat( Drawer.fatLine ) )
@@ -105,11 +90,12 @@ extension SudokuPuzzle {
             
             // Draw the thin lines
             context.setLineWidth( CGFloat( Drawer.thinLine ) )
-            for index in 0 ..< level * level {
+            for index in 0 ..< puzzle.limit {
                 if !index.isMultiple( of: level ) {
-                    let fatLines = ( index / level + 1 )
-                    let thinLines = 2 * index / level + index % level - 1
-                    let base = fatLines * Drawer.fatLine + thinLines * Drawer.thinLine + index * cellSize + Drawer.thinLine / 2
+                    let fatLines = ( index / level + 1 ) * Drawer.fatLine
+                    let thinLineCount = ( level - 1 ) * ( index / level ) + index % level - 1
+                    let thinLines = thinLineCount * Drawer.thinLine
+                    let base = fatLines + thinLines + index * cellSize + Drawer.thinLine / 2
                     context.move( to: CGPoint( x: base, y: 0 ) )
                     context.addLine( to: CGPoint( x: base, y: size ) )
                     context.move( to: CGPoint( x: 0, y: base ) )
@@ -120,29 +106,32 @@ extension SudokuPuzzle {
 
             // Draw the cell contents
             for cell in puzzle.cells {
-                draw( cell: cell, context: context )
+                context.saveGState()
+                moveTo( cell: cell, puzzle: puzzle, context: context )
+                draw( cell: cell, puzzle: puzzle, context: context )
+                context.restoreGState()
             }
             
             let final = context.makeImage()!
             return NSImage( cgImage: final, size: NSSize(width: size / 2, height: size / 2 ) )
         }
         
-        func penciledRect( penciled: Int ) -> CGRect {
+        func penciledRect( penciled: Int, puzzle: SudokuPuzzle ) -> CGRect {
             let skipOver = Drawer.miniCellSize + Drawer.cellMargin
             return CGRect(
-                x: Drawer.cellMargin + penciled % levelInfo.level * skipOver,
-                y: Drawer.cellMargin + penciled / levelInfo.level * skipOver,
+                x: Drawer.cellMargin + penciled % puzzle.level * skipOver,
+                y: Drawer.cellMargin + penciled / puzzle.level * skipOver,
                 width: Drawer.miniCellSize, height: Drawer.miniCellSize
             )
         }
         
-        func moveTo( cell: Cell, context: CGContext ) -> Void {
-            let groupRow = cell.row / levelInfo.level
-            let groupCol = cell.col / levelInfo.level
+        func moveTo( cell: Cell, puzzle: SudokuPuzzle, context: CGContext ) -> Void {
+            let groupRow = puzzle.groupRow( cell: cell )
+            let groupCol = puzzle.groupCol( cell: cell )
             let groupX = groupCol * blockSize + Drawer.fatLine * ( groupCol + 1 )
             let groupY = groupRow * blockSize + Drawer.fatLine * ( groupRow + 1 )
-            let cellX  = CGFloat( groupX + ( cell.col % levelInfo.level ) * ( cellSize + Drawer.thinLine ) )
-            let cellY  = CGFloat( groupY + ( cell.row % levelInfo.level ) * ( cellSize + Drawer.thinLine ) )
+            let cellX  = CGFloat( groupX + ( cell.col % puzzle.level ) * ( cellSize + Drawer.thinLine ) )
+            let cellY  = CGFloat( groupY + ( cell.row % puzzle.level ) * ( cellSize + Drawer.thinLine ) )
             
             context.translateBy( x: cellX, y: cellY )
         }
@@ -161,33 +150,36 @@ extension SudokuPuzzle {
             CTLineDraw( line, context )
         }
         
-        func draw( cell: Cell, context: CGContext ) -> Void {
+        func draw( cell: Cell, puzzle: SudokuPuzzle, context: CGContext ) -> Void {
+            if cell !== puzzle.selection {
+                if ( puzzle.groupRow( cell: cell ) + puzzle.groupCol( cell: cell ) ).isMultiple( of: 2 ) {
+                    context.setFillColor( Drawer.checkerboardLightColor )
+                } else {
+                    context.setFillColor( Drawer.checkerboardDarkColor )
+                }
+                context.fill( CGRect( x: 0, y: 0, width: cellSize, height: cellSize ) )
+            }
+            
             if let solved = cell.solved {
                 // Draw the solved number
-                let symbol = levelInfo.symbol( from: solved ) ?? "?"
+                let symbol = puzzle.levelInfo.symbol( from: solved ) ?? "?"
                 let rect   = CGRect(
                     x: Drawer.cellMargin, y: Drawer.cellMargin,
                     width: cellInteriorSize, height: cellInteriorSize
                 )
                 
-                context.saveGState()
-                moveTo( cell: cell, context: context )
                 draw( symbol: symbol, rect: rect, font: solvedFont, context: context )
-                context.restoreGState()
                 return
             }
             
             if !cell.penciled.isEmpty {
                 // Draw all the penciled.
-                context.saveGState()
-                moveTo( cell: cell, context: context )
                 for penciled in cell.penciled {
-                    let symbol = levelInfo.symbol( from: penciled ) ?? "?"
-                    let rect   = penciledRect( penciled: penciled )
+                    let symbol = puzzle.levelInfo.symbol( from: penciled ) ?? "?"
+                    let rect   = penciledRect( penciled: penciled, puzzle: puzzle )
 
                     draw( symbol: symbol, rect: rect, font: Drawer.penciledFont, context: context )
                 }
-                context.restoreGState()
                 return
             }
         }

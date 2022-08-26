@@ -19,6 +19,7 @@ struct SudokuPuzzle {
     let limit: Int
     let rows: [[Cell]]
     let drawer: Drawer
+    var selection: Cell?
     
     var image: NSImage { drawer.image( puzzle: self ) }
     var cells: [Cell] { rows.flatMap { $0 } }
@@ -35,4 +36,7 @@ struct SudokuPuzzle {
             }
         }
     }
+    
+    func groupRow( cell: Cell ) -> Int { cell.row / level }
+    func groupCol( cell: Cell ) -> Int { cell.col / level }
 }
