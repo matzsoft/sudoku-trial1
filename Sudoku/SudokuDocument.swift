@@ -10,7 +10,7 @@ import UniformTypeIdentifiers
 
 extension UTType {
     static var exampleText: UTType {
-        UTType(importedAs: "com.example.plain-text")
+        UTType( importedAs: "com.example.plain-text" )
     }
 }
 
@@ -41,13 +41,13 @@ struct SudokuDocument: FileDocument {
         self.text = text
     }
 
-    static var readableContentTypes: [UTType] { [.exampleText] }
+    static var readableContentTypes: [UTType] { [.text] }
 
     init( configuration: ReadConfiguration ) throws {
         guard let data = configuration.file.regularFileContents,
-              let string = String(data: data, encoding: .utf8)
+              let string = String( data: data, encoding: .utf8 )
         else {
-            throw CocoaError(.fileReadCorruptFile)
+            throw CocoaError( .fileReadCorruptFile )
         }
         text = string
         let lines = string.split( separator: "\n" )
@@ -57,7 +57,7 @@ struct SudokuDocument: FileDocument {
               level * level == lines.count,
               lines.allSatisfy( { $0.count == lines.count } )
         else {
-            throw CocoaError(.fileReadCorruptFile)
+            throw CocoaError( .fileReadCorruptFile )
         }
         puzzle = SudokuPuzzle( levelInfo: levelInfo )
         for ( row, line ) in lines.reversed().enumerated() {
@@ -65,7 +65,7 @@ struct SudokuDocument: FileDocument {
                 if let index = puzzle?.levelInfo.index( from: symbol ) {
                     puzzle?.rows[row][col].solved = index
                 } else if symbol != "." {
-                    throw CocoaError(.fileReadCorruptFile)
+                    throw CocoaError( .fileReadCorruptFile )
                 }
             }
         }

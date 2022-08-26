@@ -24,13 +24,15 @@
 			</array>
 			<key>UTTypeDescription</key>
 			<string>Example Text</string>
+			<key>UTTypeIcons</key>
+			<dict/>
 			<key>UTTypeIdentifier</key>
 			<string>com.example.plain-text</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
 				<array>
-					<string>exampletext</string>
+					<string>txt</string>
 				</array>
 			</dict>
 		</dict>
