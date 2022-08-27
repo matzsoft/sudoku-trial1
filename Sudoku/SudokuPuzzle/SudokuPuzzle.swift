@@ -28,7 +28,7 @@ struct SudokuPuzzle {
         self.levelInfo = levelInfo
         level = levelInfo.level
         limit = levelInfo.limit
-        drawer = Drawer( levelInfo: levelInfo )
+        drawer = Drawer( level: level )
         
         rows = ( 0 ..< levelInfo.limit ).map { row in
             ( 0 ..< levelInfo.limit ).map { col in

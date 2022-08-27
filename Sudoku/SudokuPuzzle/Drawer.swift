@@ -44,9 +44,7 @@ extension SudokuPuzzle {
             return attributes
         }
         
-        init( levelInfo: Level ) {
-            let level = levelInfo.level
-            
+        init( level: Int ) {
             cellSize = Drawer.cellMargin * ( level + 1 ) + Drawer.miniCellSize * level
             blockSize = level * cellSize + ( level - 1 ) * Drawer.thinLine
             size = level * blockSize + ( level + 1 ) * Drawer.fatLine
@@ -112,8 +110,10 @@ extension SudokuPuzzle {
 
             // Draw the cell contents
             for cell in puzzle.cells {
+                let rect = cellRect( cell: cell, puzzle: puzzle )
+                
                 context.saveGState()
-                moveTo( cell: cell, puzzle: puzzle, context: context )
+                context.translateBy( x: rect.minX, y: rect.minY )
                 draw( cell: cell, puzzle: puzzle, context: context )
                 context.restoreGState()
             }
@@ -140,12 +140,6 @@ extension SudokuPuzzle {
                 y: Drawer.cellMargin + penciled / puzzle.level * skipOver,
                 width: Drawer.miniCellSize, height: Drawer.miniCellSize
             )
-        }
-        
-        func moveTo( cell: Cell, puzzle: SudokuPuzzle, context: CGContext ) -> Void {
-            let rect = cellRect( cell: cell, puzzle: puzzle )
-            
-            context.translateBy( x: rect.minX, y: rect.minY )
         }
         
         func draw( symbol: Character, rect: CGRect, font: CFDictionary, context: CGContext ) -> Void {
