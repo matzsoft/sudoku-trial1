@@ -55,6 +55,12 @@ extension SudokuPuzzle {
                 color: Drawer.textColor, fontSize: CGFloat( cellSize - 2 * Drawer.cellMargin ) )
         }
         
+        func cell( for point: CGPoint, puzzle: SudokuPuzzle ) -> Cell? {
+            let point = CGPoint( x: 2 * point.x, y: 2 * point.y )
+            
+            return puzzle.cells.first { cellRect( cell: $0, puzzle: puzzle ).contains(point ) }
+        }
+        
         func image( puzzle: SudokuPuzzle ) -> NSImage {
             // Create the image to draw in.
             let level = puzzle.level
@@ -116,6 +122,17 @@ extension SudokuPuzzle {
             return NSImage( cgImage: final, size: NSSize(width: size / 2, height: size / 2 ) )
         }
         
+        func cellRect( cell: Cell, puzzle: SudokuPuzzle ) -> CGRect {
+            let groupRow = puzzle.groupRow( cell: cell )
+            let groupCol = puzzle.groupCol( cell: cell )
+            let groupX = groupCol * blockSize + Drawer.fatLine * ( groupCol + 1 )
+            let groupY = groupRow * blockSize + Drawer.fatLine * ( groupRow + 1 )
+            let cellX  = groupX + ( cell.col % puzzle.level ) * ( cellSize + Drawer.thinLine )
+            let cellY  = groupY + ( cell.row % puzzle.level ) * ( cellSize + Drawer.thinLine )
+            
+            return CGRect( x: cellX, y: cellY, width: cellSize, height: cellSize )
+        }
+        
         func penciledRect( penciled: Int, puzzle: SudokuPuzzle ) -> CGRect {
             let skipOver = Drawer.miniCellSize + Drawer.cellMargin
             return CGRect(
@@ -126,14 +143,9 @@ extension SudokuPuzzle {
         }
         
         func moveTo( cell: Cell, puzzle: SudokuPuzzle, context: CGContext ) -> Void {
-            let groupRow = puzzle.groupRow( cell: cell )
-            let groupCol = puzzle.groupCol( cell: cell )
-            let groupX = groupCol * blockSize + Drawer.fatLine * ( groupCol + 1 )
-            let groupY = groupRow * blockSize + Drawer.fatLine * ( groupRow + 1 )
-            let cellX  = CGFloat( groupX + ( cell.col % puzzle.level ) * ( cellSize + Drawer.thinLine ) )
-            let cellY  = CGFloat( groupY + ( cell.row % puzzle.level ) * ( cellSize + Drawer.thinLine ) )
+            let rect = cellRect( cell: cell, puzzle: puzzle )
             
-            context.translateBy( x: cellX, y: cellY )
+            context.translateBy( x: rect.minX, y: rect.minY )
         }
         
         func draw( symbol: Character, rect: CGRect, font: CFDictionary, context: CGContext ) -> Void {

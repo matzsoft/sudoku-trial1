@@ -39,4 +39,13 @@ struct SudokuPuzzle {
     
     func groupRow( cell: Cell ) -> Int { cell.row / level }
     func groupCol( cell: Cell ) -> Int { cell.col / level }
+    
+    mutating func mouseClick( point: CGPoint ) -> Void {
+        guard let cell = drawer.cell( for: point, puzzle: self ) else {
+            NSSound.beep()
+            return
+        }
+        
+        selection = cell
+    }
 }
