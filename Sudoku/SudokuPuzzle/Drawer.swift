@@ -26,6 +26,7 @@ extension SudokuPuzzle {
         let size: Int
         let cellInteriorSize: Int
         let solvedFont: CFDictionary
+        let context: CGContext
 
         static func setupFontAttributes( color: CGColor, fontSize: CGFloat ) -> CFDictionary {
             let fontAttributes = [
@@ -51,6 +52,24 @@ extension SudokuPuzzle {
             cellInteriorSize = cellSize - 2 * Drawer.cellMargin
             solvedFont = Drawer.setupFontAttributes(
                 color: Drawer.textColor, fontSize: CGFloat( cellSize - 2 * Drawer.cellMargin ) )
+
+            let nsImage = NSImage( size: NSSize( width: size, height: size ) )
+            let imageRep = NSBitmapImageRep(
+                bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size, bitsPerSample: 8,
+                samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                colorSpaceName: NSColorSpaceName.calibratedRGB, bytesPerRow: 0, bitsPerPixel: 0
+            )!
+            nsImage.addRepresentation( imageRep )
+            let cgImage = nsImage.cgImage( forProposedRect: nil, context: nil, hints: nil )!
+            context = CGContext(
+                data: nil,
+                width: Int( cgImage.width ),
+                height: Int( cgImage.height ),
+                bitsPerComponent: cgImage.bitsPerComponent,
+                bytesPerRow: 0,
+                space: cgImage.colorSpace!,
+                bitmapInfo: cgImage.bitmapInfo.rawValue
+            )!
         }
         
         func cell( for point: CGPoint, puzzle: SudokuPuzzle ) -> Cell? {
@@ -62,25 +81,9 @@ extension SudokuPuzzle {
         func image( puzzle: SudokuPuzzle ) -> NSImage {
             // Create the image to draw in.
             let level = puzzle.level
-            let nsImage = NSImage( size: NSSize( width: size, height: size ) )
-            let imageRep = NSBitmapImageRep(
-                bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size, bitsPerSample: 8,
-                samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
-                colorSpaceName: NSColorSpaceName.calibratedRGB, bytesPerRow: 0, bitsPerPixel: 0
-            )!
-            nsImage.addRepresentation( imageRep )
-            let cgImage = nsImage.cgImage( forProposedRect: nil, context: nil, hints: nil )!
-            let context = CGContext(
-                data: nil,
-                width: Int( cgImage.width ),
-                height: Int( cgImage.height ),
-                bitsPerComponent: cgImage.bitsPerComponent,
-                bytesPerRow: 0,
-                space: cgImage.colorSpace!,
-                bitmapInfo: cgImage.bitmapInfo.rawValue
-            )!
 
             // Draw the fat lines
+            context.clear( CGRect( x: 0, y: 0, width: size, height: size ) )
             context.setStrokeColor( Drawer.lineColor )
             context.setLineWidth( CGFloat( Drawer.fatLine ) )
             let fatLineSpacing = level * cellSize + ( level - 1 ) * Drawer.thinLine + Drawer.fatLine
@@ -114,7 +117,7 @@ extension SudokuPuzzle {
                 
                 context.saveGState()
                 context.translateBy( x: rect.minX, y: rect.minY )
-                draw( cell: cell, puzzle: puzzle, context: context )
+                draw( cell: cell, puzzle: puzzle )
                 context.restoreGState()
             }
             
@@ -142,7 +145,7 @@ extension SudokuPuzzle {
             )
         }
         
-        func draw( symbol: Character, rect: CGRect, font: CFDictionary, context: CGContext ) -> Void {
+        func draw( symbol: Character, rect: CGRect, font: CFDictionary ) -> Void {
             let symbol     = String( symbol ) as CFString
             let attrString = CFAttributedStringCreate( kCFAllocatorDefault, symbol, font )
             let line       = CTLineCreateWithAttributedString( attrString! )
@@ -156,7 +159,7 @@ extension SudokuPuzzle {
             CTLineDraw( line, context )
         }
         
-        func draw( cell: Cell, puzzle: SudokuPuzzle, context: CGContext ) -> Void {
+        func draw( cell: Cell, puzzle: SudokuPuzzle ) -> Void {
             if cell !== puzzle.selection {
                 if ( puzzle.groupRow( cell: cell ) + puzzle.groupCol( cell: cell ) ).isMultiple( of: 2 ) {
                     context.setFillColor( Drawer.checkerboardLightColor )
@@ -174,7 +177,7 @@ extension SudokuPuzzle {
                     width: cellInteriorSize, height: cellInteriorSize
                 )
                 
-                draw( symbol: symbol, rect: rect, font: solvedFont, context: context )
+                draw( symbol: symbol, rect: rect, font: solvedFont )
                 return
             }
             
@@ -184,7 +187,7 @@ extension SudokuPuzzle {
                     let symbol = puzzle.levelInfo.symbol( from: penciled ) ?? "?"
                     let rect   = penciledRect( penciled: penciled, puzzle: puzzle )
 
-                    draw( symbol: symbol, rect: rect, font: Drawer.penciledFont, context: context )
+                    draw( symbol: symbol, rect: rect, font: Drawer.penciledFont )
                 }
                 return
             }
