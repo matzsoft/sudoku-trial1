@@ -22,11 +22,8 @@ extension SudokuPuzzle {
         static let penciledFont = setupFontAttributes( color: textColor, fontSize: CGFloat( miniCellSize ) )
 
         let cellSize: Int
-        let blockSize: Int
-        let size: Int
         let cellInteriorSize: Int
         let solvedFont: CFDictionary
-        let context: CGContext
 
         static func setupFontAttributes( color: CGColor, fontSize: CGFloat ) -> CFDictionary {
             let fontAttributes = [
@@ -67,77 +64,9 @@ extension SudokuPuzzle {
         
         init( level: Int ) {
             cellSize = Drawer.cellMargin * ( level + 1 ) + Drawer.miniCellSize * level
-            blockSize = level * cellSize + ( level - 1 ) * Drawer.thinLine
-            size = level * blockSize + ( level + 1 ) * Drawer.fatLine
             cellInteriorSize = cellSize - 2 * Drawer.cellMargin
             solvedFont = Drawer.setupFontAttributes(
                 color: Drawer.textColor, fontSize: CGFloat( cellSize - 2 * Drawer.cellMargin ) )
-
-            context = Drawer.makeContext( size: NSSize( width: cellSize, height: cellSize ) )!
-        }
-        
-        func cell( for point: CGPoint, puzzle: SudokuPuzzle ) -> Cell? {
-            let point = CGPoint( x: 2 * point.x, y: 2 * point.y )
-            
-            return puzzle.cells.first { cellRect( cell: $0, puzzle: puzzle ).contains(point ) }
-        }
-        
-        func image( puzzle: SudokuPuzzle ) -> NSImage {
-            // Create the image to draw in.
-            let level = puzzle.level
-
-            // Draw the fat lines
-            context.clear( CGRect( x: 0, y: 0, width: size, height: size ) )
-            context.setStrokeColor( Drawer.lineColor )
-            context.setLineWidth( CGFloat( Drawer.fatLine ) )
-            let fatLineSpacing = level * cellSize + ( level - 1 ) * Drawer.thinLine + Drawer.fatLine
-            for base in stride( from: Drawer.fatLine / 2, to: size, by: fatLineSpacing ) {
-                context.move( to: CGPoint( x: base, y: 0 ) )
-                context.addLine( to: CGPoint( x: base, y: size ) )
-                context.move( to: CGPoint( x: 0, y: base ) )
-                context.addLine( to: CGPoint( x: size, y: base ) )
-            }
-            context.strokePath()
-            
-            // Draw the thin lines
-            context.setLineWidth( CGFloat( Drawer.thinLine ) )
-            for index in 0 ..< puzzle.limit {
-                if !index.isMultiple( of: level ) {
-                    let fatLines = ( index / level + 1 ) * Drawer.fatLine
-                    let thinLineCount = ( level - 1 ) * ( index / level ) + index % level - 1
-                    let thinLines = thinLineCount * Drawer.thinLine
-                    let base = fatLines + thinLines + index * cellSize + Drawer.thinLine / 2
-                    context.move( to: CGPoint( x: base, y: 0 ) )
-                    context.addLine( to: CGPoint( x: base, y: size ) )
-                    context.move( to: CGPoint( x: 0, y: base ) )
-                    context.addLine( to: CGPoint( x: size, y: base ) )
-                }
-            }
-            context.strokePath()
-
-            // Draw the cell contents
-            for cell in puzzle.cells {
-                let rect = cellRect( cell: cell, puzzle: puzzle )
-                
-                context.saveGState()
-                context.translateBy( x: rect.minX, y: rect.minY )
-                draw( cell: cell, puzzle: puzzle, context: context )
-                context.restoreGState()
-            }
-            
-            let final = context.makeImage()!
-            return NSImage( cgImage: final, size: NSSize( width: size / 2, height: size / 2 ) )
-        }
-        
-        func cellRect( cell: Cell, puzzle: SudokuPuzzle ) -> CGRect {
-            let groupRow = puzzle.groupRow( cell: cell )
-            let groupCol = puzzle.groupCol( cell: cell )
-            let groupX = groupCol * blockSize + Drawer.fatLine * ( groupCol + 1 )
-            let groupY = groupRow * blockSize + Drawer.fatLine * ( groupRow + 1 )
-            let cellX  = groupX + ( cell.col % puzzle.level ) * ( cellSize + Drawer.thinLine )
-            let cellY  = groupY + ( cell.row % puzzle.level ) * ( cellSize + Drawer.thinLine )
-            
-            return CGRect( x: cellX, y: cellY, width: cellSize, height: cellSize )
         }
         
         func penciledRect( penciled: Int, puzzle: SudokuPuzzle ) -> CGRect {
@@ -168,35 +97,35 @@ extension SudokuPuzzle {
             let top    = cell.row.isMultiple( of: puzzle.level ) ? Drawer.fatLine : Drawer.thinLine
             let right  = cell.col == puzzle.limit - 1 ? Drawer.fatLine : 0
             let bottom = cell.row == puzzle.limit - 1 ? Drawer.fatLine : 0
-            let rect = cellRect( cell: cell, puzzle: puzzle )
-            let totalSize = NSSize(
-                width: Int( rect.width ) + left + right, height: Int( rect.height ) + top + bottom )
-            
-            guard let context = Drawer.makeContext( size: totalSize ) else {
+            let width  = cellSize + left + right
+            let height = cellSize + top + bottom
+
+            guard let context = Drawer.makeContext( size: NSSize( width: width, height: height ) ) else {
                 return NSImage( named: NSImage.cautionName )!
             }
             
             context.setStrokeColor( Drawer.lineColor )
             context.setLineWidth( CGFloat( left ) )
             context.move( to: CGPoint( x: CGFloat( left ) / 2, y: 0 ) )
-            context.addLine( to: CGPoint( x: CGFloat( left ) / 2, y: totalSize.height ) )
+            context.addLine( to: CGPoint( x: CGFloat( left ) / 2, y: CGFloat( height ) ) )
             context.strokePath()
+            
             context.setLineWidth( CGFloat( top ) )
-            context.move( to: CGPoint( x: 0, y: totalSize.height - CGFloat( top ) / 2 ) )
-            context.addLine( to: CGPoint( x: totalSize.width, y: totalSize.height - CGFloat( top ) / 2 ) )
+            context.move( to: CGPoint( x: 0, y: CGFloat( height ) - CGFloat( top ) / 2 ) )
+            context.addLine( to: CGPoint( x: CGFloat( width ), y: CGFloat( height ) - CGFloat( top ) / 2 ) )
             context.strokePath()
 
             if bottom > 0 {
                 context.setLineWidth( CGFloat( bottom ) )
                 context.move( to: CGPoint( x: 0, y: CGFloat( bottom ) / 2 ) )
-                context.addLine( to: CGPoint( x: totalSize.width, y: CGFloat( bottom ) / 2 ) )
+                context.addLine( to: CGPoint( x: CGFloat( width ), y: CGFloat( bottom ) / 2 ) )
                 context.strokePath()
             }
             if right > 0 {
-                let x = totalSize.width - CGFloat( right ) / 2
+                let x = CGFloat( width ) - CGFloat( right ) / 2
                 context.setLineWidth( CGFloat( right ) )
                 context.move( to: CGPoint( x: x, y: 0 ) )
-                context.addLine( to: CGPoint( x: x, y: totalSize.height ) )
+                context.addLine( to: CGPoint( x: x, y: CGFloat( height ) ) )
                 context.strokePath()
             }
 
@@ -204,7 +133,7 @@ extension SudokuPuzzle {
             draw( cell: cell, puzzle: puzzle, context: context )
             return NSImage(
                 cgImage: context.makeImage()!,
-                size: NSSize( width: totalSize.width / 2, height: totalSize.height / 2 )
+                size: NSSize( width: width / 2, height: height / 2 )
             )
         }
         

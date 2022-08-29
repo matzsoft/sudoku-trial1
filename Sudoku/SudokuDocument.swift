@@ -23,22 +23,10 @@ struct SudokuDocument: FileDocument {
         set { puzzle = SudokuPuzzle( levelInfo: newValue! ) }
     }
     var needsLevel: Bool { level == nil }
-    var levelDescription: String {
-        guard let level = level else {
-            return "No level for the puzzle."
-        }
-
-        return level.label
-    }
-    var image: NSImage {
-        guard let puzzle = puzzle else {
-            return NSImage( named: NSImage.cautionName )!
-        }
-        return puzzle.image
-    }
+    var levelDescription: String { level?.label ?? "No level for the puzzle." }
     var rows: [[SudokuPuzzle.Cell]] { puzzle?.rows ?? [] }
 
-    init(text: String = "Hello, world!") {
+    init( text: String = "Hello, world!" ) {
         self.text = text
     }
 

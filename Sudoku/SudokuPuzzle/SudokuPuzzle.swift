@@ -21,7 +21,6 @@ struct SudokuPuzzle {
     let drawer: Drawer
     var selection: Cell?
     
-    var image: NSImage { drawer.image( puzzle: self ) }
     var cells: [Cell] { rows.flatMap { $0 } }
     
     init( levelInfo: Level ) {
@@ -39,13 +38,4 @@ struct SudokuPuzzle {
     
     func groupRow( cell: Cell ) -> Int { cell.row / level }
     func groupCol( cell: Cell ) -> Int { cell.col / level }
-    
-    mutating func mouseClick( point: CGPoint ) -> Void {
-        guard let cell = drawer.cell( for: point, puzzle: self ) else {
-            NSSound.beep()
-            return
-        }
-        
-        selection = cell
-    }
 }
