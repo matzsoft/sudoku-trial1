@@ -13,6 +13,42 @@ struct ContentView: View {
     @State var overImg = false
     
     var body: some View {
+        VStack( alignment: .leading, spacing: 0 ) {
+            ForEach( $document.wrappedValue.rows ) { row in
+                HStack( alignment: .top, spacing: 0 ) {
+                    ForEach( row ) { cell in
+                        Image( nsImage: $document.wrappedValue.puzzle!.drawer.image( cell: cell, puzzle: $document.wrappedValue.puzzle! ) )
+                            .onTapGesture {
+                                $document.wrappedValue.puzzle?.selection = cell
+                            }
+                    }
+                }
+            }
+        }
+        .padding()
+        .background( LinearGradient(
+            gradient: Gradient(
+                colors: [ .blue.opacity( 0.25 ), .cyan.opacity( 0.25 ), .green.opacity( 0.25 ) ]
+            ),
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+            )
+            .confirmationDialog( "Puzzle Level", isPresented: $needsLevel ) {
+                ForEach( SudokuPuzzle.supportedLevels, id: \.self ) { level in
+                    Button( level.label ) { $document.wrappedValue.level = level; needsLevel = false }
+                }
+            }
+            message: {
+                Text( "Select your puzzle size" )
+            }
+            .onAppear() {
+                needsLevel = $document.wrappedValue.needsLevel
+            }
+        )
+    }
+    
+    // Original body from one view for the puzzle.  Kept here for possible reference for key events.
+    var blinko: some View {
         Image( nsImage: $document.wrappedValue.image )
             .confirmationDialog( "Puzzle Level", isPresented: $needsLevel ) {
                 ForEach( SudokuPuzzle.supportedLevels, id: \.self ) { level in

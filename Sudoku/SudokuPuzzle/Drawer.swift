@@ -45,6 +45,26 @@ extension SudokuPuzzle {
             return attributes
         }
         
+        static func makeContext( size: NSSize ) -> CGContext? {
+            let nsImage = NSImage( size: size )
+            let imageRep = NSBitmapImageRep(
+                bitmapDataPlanes: nil, pixelsWide: Int( size.width ), pixelsHigh: Int( size.height ),
+                bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                colorSpaceName: NSColorSpaceName.calibratedRGB, bytesPerRow: 0, bitsPerPixel: 0
+            )!
+            nsImage.addRepresentation( imageRep )
+            let cgImage = nsImage.cgImage( forProposedRect: nil, context: nil, hints: nil )!
+            return CGContext(
+                data: nil,
+                width: Int( cgImage.width ),
+                height: Int( cgImage.height ),
+                bitsPerComponent: cgImage.bitsPerComponent,
+                bytesPerRow: 0,
+                space: cgImage.colorSpace!,
+                bitmapInfo: cgImage.bitmapInfo.rawValue
+            )
+        }
+        
         init( level: Int ) {
             cellSize = Drawer.cellMargin * ( level + 1 ) + Drawer.miniCellSize * level
             blockSize = level * cellSize + ( level - 1 ) * Drawer.thinLine
@@ -53,23 +73,7 @@ extension SudokuPuzzle {
             solvedFont = Drawer.setupFontAttributes(
                 color: Drawer.textColor, fontSize: CGFloat( cellSize - 2 * Drawer.cellMargin ) )
 
-            let nsImage = NSImage( size: NSSize( width: size, height: size ) )
-            let imageRep = NSBitmapImageRep(
-                bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size, bitsPerSample: 8,
-                samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
-                colorSpaceName: NSColorSpaceName.calibratedRGB, bytesPerRow: 0, bitsPerPixel: 0
-            )!
-            nsImage.addRepresentation( imageRep )
-            let cgImage = nsImage.cgImage( forProposedRect: nil, context: nil, hints: nil )!
-            context = CGContext(
-                data: nil,
-                width: Int( cgImage.width ),
-                height: Int( cgImage.height ),
-                bitsPerComponent: cgImage.bitsPerComponent,
-                bytesPerRow: 0,
-                space: cgImage.colorSpace!,
-                bitmapInfo: cgImage.bitmapInfo.rawValue
-            )!
+            context = Drawer.makeContext( size: NSSize( width: cellSize, height: cellSize ) )!
         }
         
         func cell( for point: CGPoint, puzzle: SudokuPuzzle ) -> Cell? {
@@ -117,12 +121,12 @@ extension SudokuPuzzle {
                 
                 context.saveGState()
                 context.translateBy( x: rect.minX, y: rect.minY )
-                draw( cell: cell, puzzle: puzzle )
+                draw( cell: cell, puzzle: puzzle, context: context )
                 context.restoreGState()
             }
             
             let final = context.makeImage()!
-            return NSImage( cgImage: final, size: NSSize(width: size / 2, height: size / 2 ) )
+            return NSImage( cgImage: final, size: NSSize( width: size / 2, height: size / 2 ) )
         }
         
         func cellRect( cell: Cell, puzzle: SudokuPuzzle ) -> CGRect {
@@ -145,7 +149,7 @@ extension SudokuPuzzle {
             )
         }
         
-        func draw( symbol: Character, rect: CGRect, font: CFDictionary ) -> Void {
+        func draw( symbol: Character, rect: CGRect, font: CFDictionary, context: CGContext ) -> Void {
             let symbol     = String( symbol ) as CFString
             let attrString = CFAttributedStringCreate( kCFAllocatorDefault, symbol, font )
             let line       = CTLineCreateWithAttributedString( attrString! )
@@ -159,7 +163,52 @@ extension SudokuPuzzle {
             CTLineDraw( line, context )
         }
         
-        func draw( cell: Cell, puzzle: SudokuPuzzle ) -> Void {
+        func image( cell: Cell, puzzle: SudokuPuzzle ) -> NSImage {
+            let left   = cell.col.isMultiple( of: puzzle.level ) ? Drawer.fatLine : Drawer.thinLine
+            let top    = cell.row.isMultiple( of: puzzle.level ) ? Drawer.fatLine : Drawer.thinLine
+            let right  = cell.col == puzzle.limit - 1 ? Drawer.fatLine : 0
+            let bottom = cell.row == puzzle.limit - 1 ? Drawer.fatLine : 0
+            let rect = cellRect( cell: cell, puzzle: puzzle )
+            let totalSize = NSSize(
+                width: Int( rect.width ) + left + right, height: Int( rect.height ) + top + bottom )
+            
+            guard let context = Drawer.makeContext( size: totalSize ) else {
+                return NSImage( named: NSImage.cautionName )!
+            }
+            
+            context.setStrokeColor( Drawer.lineColor )
+            context.setLineWidth( CGFloat( left ) )
+            context.move( to: CGPoint( x: CGFloat( left ) / 2, y: 0 ) )
+            context.addLine( to: CGPoint( x: CGFloat( left ) / 2, y: totalSize.height ) )
+            context.strokePath()
+            context.setLineWidth( CGFloat( top ) )
+            context.move( to: CGPoint( x: 0, y: totalSize.height - CGFloat( top ) / 2 ) )
+            context.addLine( to: CGPoint( x: totalSize.width, y: totalSize.height - CGFloat( top ) / 2 ) )
+            context.strokePath()
+
+            if bottom > 0 {
+                context.setLineWidth( CGFloat( bottom ) )
+                context.move( to: CGPoint( x: 0, y: CGFloat( bottom ) / 2 ) )
+                context.addLine( to: CGPoint( x: totalSize.width, y: CGFloat( bottom ) / 2 ) )
+                context.strokePath()
+            }
+            if right > 0 {
+                let x = totalSize.width - CGFloat( right ) / 2
+                context.setLineWidth( CGFloat( right ) )
+                context.move( to: CGPoint( x: x, y: 0 ) )
+                context.addLine( to: CGPoint( x: x, y: totalSize.height ) )
+                context.strokePath()
+            }
+
+            context.translateBy( x: CGFloat( left ), y: CGFloat( bottom ) )
+            draw( cell: cell, puzzle: puzzle, context: context )
+            return NSImage(
+                cgImage: context.makeImage()!,
+                size: NSSize( width: totalSize.width / 2, height: totalSize.height / 2 )
+            )
+        }
+        
+        func draw( cell: Cell, puzzle: SudokuPuzzle, context: CGContext ) -> Void {
             if cell !== puzzle.selection {
                 if ( puzzle.groupRow( cell: cell ) + puzzle.groupCol( cell: cell ) ).isMultiple( of: 2 ) {
                     context.setFillColor( Drawer.checkerboardLightColor )
@@ -177,7 +226,7 @@ extension SudokuPuzzle {
                     width: cellInteriorSize, height: cellInteriorSize
                 )
                 
-                draw( symbol: symbol, rect: rect, font: solvedFont )
+                draw( symbol: symbol, rect: rect, font: solvedFont, context: context )
                 return
             }
             
@@ -187,7 +236,7 @@ extension SudokuPuzzle {
                     let symbol = puzzle.levelInfo.symbol( from: penciled ) ?? "?"
                     let rect   = penciledRect( penciled: penciled, puzzle: puzzle )
 
-                    draw( symbol: symbol, rect: rect, font: Drawer.penciledFont )
+                    draw( symbol: symbol, rect: rect, font: Drawer.penciledFont, context: context )
                 }
                 return
             }

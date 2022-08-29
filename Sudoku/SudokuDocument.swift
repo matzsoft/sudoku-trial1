@@ -36,6 +36,7 @@ struct SudokuDocument: FileDocument {
         }
         return puzzle.image
     }
+    var rows: [[SudokuPuzzle.Cell]] { puzzle?.rows ?? [] }
 
     init(text: String = "Hello, world!") {
         self.text = text
@@ -53,14 +54,14 @@ struct SudokuDocument: FileDocument {
         let lines = string.split( separator: "\n" )
         let level = Int( sqrt( Double( lines.count ) ) )
         
-        guard let levelInfo = SudokuPuzzle.supportedLevels.first(where: { $0.level == level } ),
+        guard let levelInfo = SudokuPuzzle.supportedLevels.first( where: { $0.level == level } ),
               level * level == lines.count,
               lines.allSatisfy( { $0.count == lines.count } )
         else {
             throw CocoaError( .fileReadCorruptFile )
         }
         puzzle = SudokuPuzzle( levelInfo: levelInfo )
-        for ( row, line ) in lines.reversed().enumerated() {
+        for ( row, line ) in lines.enumerated() {
             for ( col, symbol ) in line.enumerated() {
                 if let index = puzzle?.levelInfo.index( from: symbol ) {
                     puzzle?.rows[row][col].solved = index

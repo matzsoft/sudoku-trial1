@@ -8,7 +8,16 @@
 import Foundation
 
 extension SudokuPuzzle {
-    class Cell {
+    class Cell: Hashable, Identifiable {
+        static func == ( lhs: SudokuPuzzle.Cell, rhs: SudokuPuzzle.Cell ) -> Bool {
+            return lhs.row == rhs.row && lhs.col == rhs.col
+        }
+        
+        func hash( into hasher: inout Hasher ) {
+            hasher.combine( row )
+            hasher.combine( col )
+        }
+
         var solved: Int?
         var penciled: [Int] = []
         let row: Int
@@ -21,4 +30,12 @@ extension SudokuPuzzle {
             self.col = col
         }
     }
+}
+
+extension Array: Identifiable where Element: Hashable {
+    public var id: Int {
+        self[0].hashValue
+    }
+    
+    
 }
