@@ -1,4 +1,4 @@
-# sudoku
+# Sudoku
 Data entry and solver for sudoku puzzles. A MacOS app.
 
 Still in early development.  Here is what is working so far.
