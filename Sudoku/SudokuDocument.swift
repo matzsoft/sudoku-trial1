@@ -64,4 +64,10 @@ struct SudokuDocument: FileDocument {
         let data = text.data(using: .utf8)!
         return .init(regularFileWithContents: data)
     }
+    
+    func moveCommand( direction: MoveCommandDirection ) -> SudokuPuzzle.Cell {
+        guard let puzzle = puzzle else { fatalError( "No puzzle available" ) }
+
+        return puzzle.moveCommand( direction: direction )
+    }
 }

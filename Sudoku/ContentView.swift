@@ -41,10 +41,15 @@ struct ContentView: View {
             message: {
                 Text( "Select your puzzle size" )
             }
-            .onAppear() {
-                needsLevel = $document.wrappedValue.needsLevel
-            }
         )
+        .focusable()
+        .onAppear() {
+            needsLevel = $document.wrappedValue.needsLevel
+        }
+        .onMoveCommand { direction in
+            $document.wrappedValue.puzzle?.selection
+                = $document.wrappedValue.moveCommand( direction: direction )
+        }
     }
     
     // Original body from one view for the puzzle.  Kept here for possible reference for key events.
