@@ -133,7 +133,7 @@ extension SudokuPuzzle {
             draw( cell: cell, puzzle: puzzle, context: context )
             return NSImage(
                 cgImage: context.makeImage()!,
-                size: NSSize( width: width / 2, height: height / 2 )
+                size: NSSize( width: CGFloat( width ) / 2, height: CGFloat( height ) / 2 )
             )
         }
         
