@@ -50,6 +50,7 @@ struct ContentView: View {
             $document.wrappedValue.puzzle?.selection
                 = $document.wrappedValue.moveCommand( direction: direction )
         }
+//        KeyController()
     }
     
     // Original body from one view for the puzzle.  Kept here for possible reference for key events.

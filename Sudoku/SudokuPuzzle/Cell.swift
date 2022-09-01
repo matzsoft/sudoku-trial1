@@ -23,6 +23,11 @@ extension SudokuPuzzle {
         let row: Int
         let col: Int
         
+        var speechString: String {
+            guard let solved = solved else { return "dot" }
+            return String( solved )
+        }
+
         init( solved: Int? = nil, penciled: [Int] = [], row: Int, col: Int) {
             self.solved = solved
             self.penciled = penciled

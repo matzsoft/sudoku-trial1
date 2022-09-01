@@ -17,7 +17,9 @@ extension UTType {
 struct SudokuDocument: FileDocument {
     var text: String
     var puzzle: SudokuPuzzle?
-    
+    var isSpeaking = false
+    var speechQueue: [ SpeechCommand ] = []
+
     var level: SudokuPuzzle.Level? {
         get { puzzle?.levelInfo }
         set { puzzle = SudokuPuzzle( levelInfo: newValue! ) }
