@@ -20,7 +20,6 @@ struct SudokuPuzzle {
     let limit: Int
     let rows: [[Cell]]
     let drawer: Drawer
-    var selection: Cell?
     
     var cells: [Cell] { rows.flatMap { $0 } }
     
@@ -39,31 +38,4 @@ struct SudokuPuzzle {
     
     func groupRow( cell: Cell ) -> Int { cell.row / level }
     func groupCol( cell: Cell ) -> Int { cell.col / level }
-    
-    func moveCommand( direction: MoveCommandDirection ) -> Cell {
-        guard let selection = selection else { return rows[0][0] }
-
-        switch direction {
-        case .up:
-            if selection.row > 0 {
-                return rows[ selection.row - 1 ][ selection.col ]
-            }
-        case .down:
-            if selection.row < limit - 1 {
-                return rows[ selection.row + 1 ][ selection.col ]
-            }
-        case .left:
-            if selection.col > 0 {
-                return rows[ selection.row ][ selection.col - 1 ]
-            }
-        case .right:
-            if selection.col < limit - 1 {
-                return rows[ selection.row ][ selection.col + 1 ]
-            }
-        @unknown default:
-            fatalError( "Unknown move direction" )
-        }
-        NSSound.beep()
-        return selection
-    }
 }

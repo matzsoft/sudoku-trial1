@@ -10,17 +10,16 @@ import SwiftUI
 struct ContentView: View {
     @Binding var document: SudokuDocument
     @State private var needsLevel = true
+    @State private var selection: SudokuPuzzle.Cell?
     @State var overImg = false
     
     var body: some View {
         VStack( alignment: .leading, spacing: 0 ) {
-            ForEach( $document.wrappedValue.rows ) { row in
+            ForEach( document.rows ) { row in
                 HStack( alignment: .top, spacing: 0 ) {
                     ForEach( row ) { cell in
-                        Image( nsImage: $document.wrappedValue.puzzle!.drawer.image( cell: cell, puzzle: $document.wrappedValue.puzzle! ) )
-                            .onTapGesture {
-                                $document.wrappedValue.puzzle?.selection = cell
-                            }
+                        Image( nsImage: document.image( cell: cell, selection: selection ) )
+                            .onTapGesture { selection = cell }
                     }
                 }
             }
@@ -35,7 +34,7 @@ struct ContentView: View {
             )
             .confirmationDialog( "Puzzle Level", isPresented: $needsLevel ) {
                 ForEach( SudokuPuzzle.supportedLevels, id: \.self ) { level in
-                    Button( level.label ) { $document.wrappedValue.level = level; needsLevel = false }
+                    Button( level.label ) { document.level = level; needsLevel = false }
                 }
             }
             message: {
@@ -44,11 +43,10 @@ struct ContentView: View {
         )
         .focusable()
         .onAppear() {
-            needsLevel = $document.wrappedValue.needsLevel
+            needsLevel = document.needsLevel
         }
         .onMoveCommand { direction in
-            $document.wrappedValue.puzzle?.selection
-                = $document.wrappedValue.moveCommand( direction: direction )
+            selection = document.moveCommand( direction: direction, selection: selection )
         }
 //        KeyController()
     }

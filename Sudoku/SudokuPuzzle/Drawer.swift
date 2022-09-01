@@ -92,7 +92,7 @@ extension SudokuPuzzle {
             CTLineDraw( line, context )
         }
         
-        func image( cell: Cell, puzzle: SudokuPuzzle ) -> NSImage {
+        func image( cell: Cell, puzzle: SudokuPuzzle, selection: Cell? ) -> NSImage {
             let left   = cell.col.isMultiple( of: puzzle.level ) ? Drawer.fatLine : Drawer.thinLine
             let top    = cell.row.isMultiple( of: puzzle.level ) ? Drawer.fatLine : Drawer.thinLine
             let right  = cell.col == puzzle.limit - 1 ? Drawer.fatLine : 0
@@ -130,15 +130,15 @@ extension SudokuPuzzle {
             }
 
             context.translateBy( x: CGFloat( left ), y: CGFloat( bottom ) )
-            draw( cell: cell, puzzle: puzzle, context: context )
+            draw( cell: cell, puzzle: puzzle, selection: selection, context: context )
             return NSImage(
                 cgImage: context.makeImage()!,
                 size: NSSize( width: CGFloat( width ) / 2, height: CGFloat( height ) / 2 )
             )
         }
         
-        func draw( cell: Cell, puzzle: SudokuPuzzle, context: CGContext ) -> Void {
-            if cell !== puzzle.selection {
+        func draw( cell: Cell, puzzle: SudokuPuzzle, selection: Cell?, context: CGContext ) -> Void {
+            if cell !== selection {
                 if ( puzzle.groupRow( cell: cell ) + puzzle.groupCol( cell: cell ) ).isMultiple( of: 2 ) {
                     context.setFillColor( Drawer.checkerboardLightColor )
                 } else {

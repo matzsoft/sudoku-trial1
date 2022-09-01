@@ -14,11 +14,38 @@ extension UTType {
     }
 }
 
+
+class SpeechDelegate: NSObject, NSSpeechSynthesizerDelegate {
+    let document: SudokuDocument
+    
+    internal init( document: SudokuDocument ) {
+        self.document = document
+    }
+    
+//    func speechSynthesizer(_ sender: NSSpeechSynthesizer, didFinishSpeaking finishedSpeaking: Bool) {
+//        guard document.isSpeaking else { return }
+//        guard !document.speechQueue.isEmpty else {
+//            document.isSpeaking = false
+//            return
+//        }
+//        
+//        let command = document.speechQueue.removeFirst()
+//        
+//        if document.puzzle.moveTo( row: command.row, col: command.col ) {
+//            viewController?.view.needsDisplay = true
+//        }
+//        
+//        sender.startSpeaking(command.string)
+//    }
+}
+
+
 struct SudokuDocument: FileDocument {
     var text: String
     var puzzle: SudokuPuzzle?
     var isSpeaking = false
     var speechQueue: [ SpeechCommand ] = []
+    var speechDelegate: SpeechDelegate?
 
     var level: SudokuPuzzle.Level? {
         get { puzzle?.levelInfo }
@@ -28,6 +55,22 @@ struct SudokuDocument: FileDocument {
     var levelDescription: String { level?.label ?? "No level for the puzzle." }
     var rows: [[SudokuPuzzle.Cell]] { puzzle?.rows ?? [] }
 
+    lazy var synthesizer: NSSpeechSynthesizer = {
+        let synthesizer = NSSpeechSynthesizer()
+        let voices = NSSpeechSynthesizer.availableVoices
+        let desiredVoiceName = "com.apple.speech.synthesis.voice.Alex"
+        let desiredVoice = NSSpeechSynthesizer.VoiceName(rawValue: desiredVoiceName)
+        
+        if let voice = voices.first(where: { $0 == desiredVoice } ) {
+            synthesizer.setVoice(voice)
+        }
+        
+        synthesizer.usesFeedbackWindow = true
+        speechDelegate = SpeechDelegate( document: self )
+        synthesizer.delegate = speechDelegate
+        return synthesizer
+    }()
+    
     init( text: String = "Hello, world!" ) {
         self.text = text
     }
@@ -67,9 +110,43 @@ struct SudokuDocument: FileDocument {
         return .init(regularFileWithContents: data)
     }
     
-    func moveCommand( direction: MoveCommandDirection ) -> SudokuPuzzle.Cell {
-        guard let puzzle = puzzle else { fatalError( "No puzzle available" ) }
+    func image( cell: SudokuPuzzle.Cell, selection: SudokuPuzzle.Cell? ) -> NSImage {
+        guard let puzzle = puzzle else { return NSImage( named: NSImage.cautionName )! }
+        return puzzle.drawer.image( cell: cell, puzzle: puzzle, selection: selection )
+    }
+    
+    func moveTo( row: Int, col: Int ) -> SudokuPuzzle.Cell? {
+        guard 0 <= row && row < rows.count else { return nil }
+        guard 0 <= col && col < rows[0].count else { return nil }
+        
+        return rows[row][col]
+    }
+    
+    func moveCommand( direction: MoveCommandDirection, selection: SudokuPuzzle.Cell? ) -> SudokuPuzzle.Cell {
+        guard puzzle != nil else { fatalError( "No puzzle available" ) }
+        guard let selection = selection else {
+            guard let selection = moveTo( row: 0, col: 0 ) else { fatalError( "Cannot set selection" ) }
+            return selection
+        }
+        var newSelection: SudokuPuzzle.Cell?
 
-        return puzzle.moveCommand( direction: direction )
+        switch direction {
+        case .up:
+            newSelection = moveTo( row: selection.row - 1, col: selection.col )
+        case .down:
+            newSelection = moveTo( row: selection.row + 1, col: selection.col )
+        case .left:
+            newSelection = moveTo( row: selection.row, col: selection.col - 1 )
+        case .right:
+            newSelection = moveTo( row: selection.row, col: selection.col + 1 )
+        @unknown default:
+            NSSound.beep()
+        }
+
+        if newSelection == nil {
+            NSSound.beep()
+            return selection
+        }
+        return newSelection!
     }
 }
