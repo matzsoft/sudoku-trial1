@@ -9,7 +9,6 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject var document: SudokuDocument
-//    @ObservedObject var selection: SudokuPuzzle.Cell?
     @State private var needsLevel = true
     @State var overImg = false
     
@@ -46,7 +45,7 @@ struct ContentView: View {
             needsLevel = document.needsLevel
         }
         .onMoveCommand { direction in
-            document.selection = document.moveCommand( direction: direction )
+            document.moveCommand( direction: direction )
         }
 //        KeyController()
     }

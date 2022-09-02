@@ -139,12 +139,13 @@ final class SudokuDocument: ReferenceFileDocument {
         return true
     }
     
-    func moveCommand( direction: MoveCommandDirection ) -> SudokuPuzzle.Cell {
+    func moveCommand( direction: MoveCommandDirection ) -> Void {
         guard puzzle != nil else { fatalError( "No puzzle available" ) }
         guard let selection = selection else {
             guard moveTo( row: 0, col: 0 ) else { fatalError( "Cannot set selection" ) }
-            return selection!
+            return
         }
+        
         let oldSelection = selection
 
         switch direction {
@@ -163,6 +164,5 @@ final class SudokuDocument: ReferenceFileDocument {
         if self.selection == oldSelection {
             NSSound.beep()
         }
-        return self.selection!
     }
 }
