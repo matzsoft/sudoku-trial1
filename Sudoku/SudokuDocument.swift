@@ -40,13 +40,17 @@ class SpeechDelegate: NSObject, NSSpeechSynthesizerDelegate {
 }
 
 
-struct SudokuDocument: FileDocument {
+final class SudokuDocument: ReferenceFileDocument {
+    typealias Snapshot = Data
+    
     var text: String
     var puzzle: SudokuPuzzle?
     var isSpeaking = false
     var speechQueue: [ SpeechCommand ] = []
     var speechDelegate: SpeechDelegate?
 
+    @Published var selection: SudokuPuzzle.Cell?
+    
     var level: SudokuPuzzle.Level? {
         get { puzzle?.levelInfo }
         set { puzzle = SudokuPuzzle( levelInfo: newValue! ) }
@@ -73,6 +77,10 @@ struct SudokuDocument: FileDocument {
     
     init( text: String = "Hello, world!" ) {
         self.text = text
+    }
+    
+    init() {
+        text = "Goodbye, World!"
     }
 
     static var readableContentTypes: [UTType] { [.text] }
@@ -105,48 +113,56 @@ struct SudokuDocument: FileDocument {
         }
     }
     
-    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-        let data = text.data(using: .utf8)!
-        return .init(regularFileWithContents: data)
+    func snapshot( contentType: UTType ) throws -> Data {
+        ( puzzle?.asString ?? "" ).data( using: .utf8 )!
     }
     
-    func image( cell: SudokuPuzzle.Cell, selection: SudokuPuzzle.Cell? ) -> NSImage {
+    func fileWrapper( snapshot: Data, configuration: WriteConfiguration ) throws -> FileWrapper {
+        FileWrapper( regularFileWithContents: snapshot )
+    }
+    
+    func fileWrapper( configuration: WriteConfiguration ) throws -> FileWrapper {
+        let data = text.data( using: .utf8 )!
+        return .init( regularFileWithContents: data )
+    }
+    
+    func image( cell: SudokuPuzzle.Cell ) -> NSImage {
         guard let puzzle = puzzle else { return NSImage( named: NSImage.cautionName )! }
         return puzzle.drawer.image( cell: cell, puzzle: puzzle, selection: selection )
     }
     
-    func moveTo( row: Int, col: Int ) -> SudokuPuzzle.Cell? {
-        guard 0 <= row && row < rows.count else { return nil }
-        guard 0 <= col && col < rows[0].count else { return nil }
+    func moveTo( row: Int, col: Int ) -> Bool {
+        guard 0 <= row && row < rows.count else { return false }
+        guard 0 <= col && col < rows[0].count else { return false }
         
-        return rows[row][col]
+        selection = rows[row][col]
+        return true
     }
     
-    func moveCommand( direction: MoveCommandDirection, selection: SudokuPuzzle.Cell? ) -> SudokuPuzzle.Cell {
+    func moveCommand( direction: MoveCommandDirection ) -> SudokuPuzzle.Cell {
         guard puzzle != nil else { fatalError( "No puzzle available" ) }
         guard let selection = selection else {
-            guard let selection = moveTo( row: 0, col: 0 ) else { fatalError( "Cannot set selection" ) }
-            return selection
+            guard moveTo( row: 0, col: 0 ) else { fatalError( "Cannot set selection" ) }
+            return selection!
         }
-        var newSelection: SudokuPuzzle.Cell?
+        let oldSelection = selection
 
         switch direction {
         case .up:
-            newSelection = moveTo( row: selection.row - 1, col: selection.col )
+            _ = moveTo( row: selection.row - 1, col: selection.col )
         case .down:
-            newSelection = moveTo( row: selection.row + 1, col: selection.col )
+            _ = moveTo( row: selection.row + 1, col: selection.col )
         case .left:
-            newSelection = moveTo( row: selection.row, col: selection.col - 1 )
+            _ = moveTo( row: selection.row, col: selection.col - 1 )
         case .right:
-            newSelection = moveTo( row: selection.row, col: selection.col + 1 )
+            _ = moveTo( row: selection.row, col: selection.col + 1 )
         @unknown default:
             NSSound.beep()
         }
 
-        if newSelection == nil {
+        if self.selection == oldSelection {
             NSSound.beep()
-            return selection
         }
-        return newSelection!
+        return self.selection!
     }
 }

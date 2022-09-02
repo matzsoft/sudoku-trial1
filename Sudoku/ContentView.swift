@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct ContentView: View {
-    @Binding var document: SudokuDocument
+    @ObservedObject var document: SudokuDocument
+//    @ObservedObject var selection: SudokuPuzzle.Cell?
     @State private var needsLevel = true
-    @State private var selection: SudokuPuzzle.Cell?
     @State var overImg = false
     
     var body: some View {
@@ -18,8 +18,8 @@ struct ContentView: View {
             ForEach( document.rows ) { row in
                 HStack( alignment: .top, spacing: 0 ) {
                     ForEach( row ) { cell in
-                        Image( nsImage: document.image( cell: cell, selection: selection ) )
-                            .onTapGesture { selection = cell }
+                        Image( nsImage: document.image( cell: cell ) )
+                            .onTapGesture { document.selection = cell }
                     }
                 }
             }
@@ -46,7 +46,7 @@ struct ContentView: View {
             needsLevel = document.needsLevel
         }
         .onMoveCommand { direction in
-            selection = document.moveCommand( direction: direction, selection: selection )
+            document.selection = document.moveCommand( direction: direction )
         }
 //        KeyController()
     }
@@ -89,8 +89,8 @@ struct ContentView: View {
 //    }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView(document: .constant(SudokuDocument()))
-    }
-}
+//struct ContentView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        ContentView( document: .constant( SudokuDocument() ) )
+//    }
+//}

@@ -23,6 +23,15 @@ struct SudokuPuzzle {
     
     var cells: [Cell] { rows.flatMap { $0 } }
     
+    var asString: String {
+        rows.map { row -> String in
+            let line = row.map { cell -> Character in
+                cell.solved == nil ? "." : ( levelInfo.symbol( from: cell.solved! ) ?? "." )
+            }
+            return String( line )
+        }.joined( separator: "\n" )
+    }
+    
     init( levelInfo: Level ) {
         self.levelInfo = levelInfo
         level = levelInfo.level
