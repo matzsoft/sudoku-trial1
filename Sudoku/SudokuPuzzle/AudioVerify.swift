@@ -36,7 +36,7 @@ extension SudokuPuzzle {
                 commands.append( SpeechCommand( row: 0, col: col, string: "Column \(col+1)." ) )
                 for row in 0 ..< rows.count {
                     let cell = rows[row][col]
-                    let string = cell.speechString
+                    let string = cell.speechString( puzzle: self )
                     
                     commands.append( SpeechCommand( row: row, col: col, string: string ) )
                 }

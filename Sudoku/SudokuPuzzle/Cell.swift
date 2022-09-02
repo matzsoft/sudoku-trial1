@@ -23,16 +23,17 @@ extension SudokuPuzzle {
         let row: Int
         let col: Int
         
-        var speechString: String {
-            guard let solved = solved else { return "dot" }
-            return String( solved )
-        }
-
         init( solved: Int? = nil, penciled: [Int] = [], row: Int, col: Int) {
             self.solved = solved
             self.penciled = penciled
             self.row = row
             self.col = col
+        }
+        
+        func speechString( puzzle: SudokuPuzzle ) -> String {
+            guard let solved = solved else { return "dot" }
+            guard let character = puzzle.levelInfo.symbol( from: solved ) else { return "dot" }
+            return String( character )
         }
     }
 }

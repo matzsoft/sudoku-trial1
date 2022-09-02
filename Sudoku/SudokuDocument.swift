@@ -22,21 +22,21 @@ class SpeechDelegate: NSObject, NSSpeechSynthesizerDelegate {
         self.document = document
     }
     
-//    func speechSynthesizer(_ sender: NSSpeechSynthesizer, didFinishSpeaking finishedSpeaking: Bool) {
-//        guard document.isSpeaking else { return }
-//        guard !document.speechQueue.isEmpty else {
-//            document.isSpeaking = false
-//            return
-//        }
-//        
-//        let command = document.speechQueue.removeFirst()
-//        
-//        if document.puzzle.moveTo( row: command.row, col: command.col ) {
+    func speechSynthesizer( _ sender: NSSpeechSynthesizer, didFinishSpeaking finishedSpeaking: Bool ) {
+        guard document.isSpeaking else { return }
+        guard !document.speechQueue.isEmpty else {
+            document.isSpeaking = false
+            return
+        }
+        
+        let command = document.speechQueue.removeFirst()
+        
+        if document.moveTo( row: command.row, col: command.col ) {
 //            viewController?.view.needsDisplay = true
-//        }
-//        
-//        sender.startSpeaking(command.string)
-//    }
+        }
+        
+        sender.startSpeaking( command.string )
+    }
 }
 
 
@@ -165,4 +165,18 @@ final class SudokuDocument: ReferenceFileDocument {
             NSSound.beep()
         }
     }
+
+    func audioVerify() {
+        guard let puzzle = puzzle else { NSSound.beep(); return }
+
+        if speechQueue.isEmpty {
+            speechQueue = puzzle.audioVerify()
+        }
+        isSpeaking = true
+        
+        let synthesizer = synthesizer
+        
+        speechDelegate!.speechSynthesizer( synthesizer, didFinishSpeaking: true )
+    }
+    
 }
