@@ -19,6 +19,5 @@ For now, in no particular order, this is a list of things needed.
 1. Allow graphics files as input, coverting them to puzzles.
 1. A "show the solution" option.
 1. An interactive "solve the puzzle" mode.
-1. The drawer suffers from too much mixing of Int and CGFloat.
 1. Need ESC to abort the audio verify.
 1. Need to disable the Audio Verify menu item when no puzzles are open.
