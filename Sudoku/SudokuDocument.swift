@@ -217,8 +217,10 @@ final class SudokuDocument: ReferenceFileDocument {
                 }
                 return nil
             case NSEvent.SpecialKey.backTab:
-                let newCol = ( selection.col - levelInfo.level ) / levelInfo.level * levelInfo.level
-                if !moveTo( row: selection.row, col: newCol ) {
+                if selection.col > 0 {
+                    let newCol = ( selection.col - 1 ) / levelInfo.level * levelInfo.level
+                    moveTo( row: selection.row, col: newCol )
+                } else {
                     moveTo( row: selection.row, col: levelInfo.limit - levelInfo.level )
                     moveUp()
                 }
