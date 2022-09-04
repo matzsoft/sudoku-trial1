@@ -11,7 +11,7 @@ struct ContentView: View {
     @ObservedObject var document: SudokuDocument
     @State private var needsLevel = true
     @State var overImg = false
-    
+
     var body: some View {
         VStack( alignment: .leading, spacing: 0 ) {
             ForEach( document.rows ) { row in
@@ -43,6 +43,9 @@ struct ContentView: View {
         .focusable()
         .onAppear() {
             needsLevel = document.needsLevel
+            NSEvent.addLocalMonitorForEvents( matching: [.keyDown] ) {
+                return document.handleKeyEvent( event: $0 )
+            }
         }
         .onMoveCommand { direction in
             document.moveCommand( direction: direction )

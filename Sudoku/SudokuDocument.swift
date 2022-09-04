@@ -156,7 +156,7 @@ final class SudokuDocument: ReferenceFileDocument {
         case .left:
             _ = moveTo( row: selection.row, col: selection.col - 1 )
         case .right:
-            _ = moveTo( row: selection.row, col: selection.col + 1 )
+            moveRight()
         @unknown default:
             NSSound.beep()
         }
@@ -179,4 +179,43 @@ final class SudokuDocument: ReferenceFileDocument {
         speechDelegate!.speechSynthesizer( synthesizer, didFinishSpeaking: true )
     }
     
+    func stopSpeaking() -> Bool {
+        let wasSpeaking = isSpeaking
+        
+        isSpeaking = false
+        return wasSpeaking
+    }
+
+    func handleKeyEvent( event: NSEvent ) -> NSEvent? {
+        guard let characters = event.characters else { return event }
+        guard let selection = selection else { return event }
+
+        if characters.count == 1 {
+            let character = characters.uppercased().first!
+            
+            if let index = level?.index( from: character ) {
+                selection.solved = index
+                moveRight()
+                return nil
+            }
+            
+            if character == "." || character == " " {
+                selection.solved = nil
+                moveRight()
+                return nil
+            }
+            
+            if event.keyCode == 53 {
+                if stopSpeaking() { return nil }
+            }
+        }
+        return event
+    }
+    
+    func moveRight() -> Void {
+        guard let selection = selection else { return }
+        if moveTo( row: selection.row, col: selection.col + 1 ) { return }
+        if moveTo(row: selection.row + 1, col: 0 ) { return }
+        _ = moveTo( row: 0, col: 0 )
+    }
 }
