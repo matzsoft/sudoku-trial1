@@ -141,27 +141,21 @@ final class SudokuDocument: ReferenceFileDocument {
     
     func moveCommand( direction: MoveCommandDirection ) -> Void {
         guard puzzle != nil else { fatalError( "No puzzle available" ) }
-        guard let selection = selection else {
+        guard selection != nil else {
             guard moveTo( row: 0, col: 0 ) else { fatalError( "Cannot set selection" ) }
             return
         }
         
-        let oldSelection = selection
-
         switch direction {
         case .up:
-            _ = moveTo( row: selection.row - 1, col: selection.col )
+            moveUp()
         case .down:
-            _ = moveTo( row: selection.row + 1, col: selection.col )
+            moveDown()
         case .left:
-            _ = moveTo( row: selection.row, col: selection.col - 1 )
+            moveLeft()
         case .right:
             moveRight()
         @unknown default:
-            NSSound.beep()
-        }
-
-        if self.selection == oldSelection {
             NSSound.beep()
         }
     }
@@ -212,10 +206,31 @@ final class SudokuDocument: ReferenceFileDocument {
         return event
     }
     
+    func moveUp() -> Void {
+        guard let selection = selection else { return }
+        guard let limit = level?.limit else { return }
+        if moveTo( row: selection.row - 1, col: selection.col ) { return }
+        _ = moveTo( row: limit - 1, col: selection.col )
+    }
+    
+    func moveDown() -> Void {
+        guard let selection = selection else { return }
+        if moveTo( row: selection.row + 1, col: selection.col + 1 ) { return }
+        _ = moveTo( row: 0, col: selection.col )
+    }
+    
+    func moveLeft() -> Void {
+        guard let selection = selection else { return }
+        guard let limit = level?.limit else { return }
+        if moveTo( row: selection.row, col: selection.col - 1 ) { return }
+        if moveTo( row: selection.row - 1, col: limit - 1 ) { return }
+        _ = moveTo( row: limit - 1, col: limit - 1 )
+    }
+
     func moveRight() -> Void {
         guard let selection = selection else { return }
         if moveTo( row: selection.row, col: selection.col + 1 ) { return }
-        if moveTo(row: selection.row + 1, col: 0 ) { return }
+        if moveTo( row: selection.row + 1, col: 0 ) { return }
         _ = moveTo( row: 0, col: 0 )
     }
 }
