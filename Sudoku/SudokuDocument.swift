@@ -126,7 +126,7 @@ final class SudokuDocument: ReferenceFileDocument {
         return puzzle.drawer.image( cell: cell, puzzle: puzzle, selection: selection )
     }
     
-    func moveTo( row: Int, col: Int ) -> Bool {
+    @discardableResult func moveTo( row: Int, col: Int ) -> Bool {
         guard 0 <= row && row < rows.count else { return false }
         guard 0 <= col && col < rows[0].count else { return false }
         
@@ -178,11 +178,12 @@ final class SudokuDocument: ReferenceFileDocument {
     func handleKeyEvent( event: NSEvent ) -> NSEvent? {
         guard let characters = event.characters else { return event }
         guard let selection = selection else { return event }
+        guard let levelInfo = level else { return event }
 
         if characters.count == 1 {
             let character = characters.uppercased().first!
             
-            if let index = level?.index( from: character ) {
+            if let index = levelInfo.index( from: character ) {
                 selection.solved = index
                 moveRight()
                 return nil
@@ -194,8 +195,47 @@ final class SudokuDocument: ReferenceFileDocument {
                 return nil
             }
             
+            // This handles escape
             if event.keyCode == 53 {
                 if stopSpeaking() { return nil }
+            }
+            
+            switch event.specialKey {
+            case NSEvent.SpecialKey.backspace, NSEvent.SpecialKey.delete:
+                selection.solved = nil
+                moveLeft()
+                return nil
+            case NSEvent.SpecialKey.deleteForward:
+                selection.solved = nil
+                moveRight()
+                return nil
+            case NSEvent.SpecialKey.tab:
+                let newCol = ( selection.col + levelInfo.level ) / levelInfo.level * levelInfo.level
+                if !moveTo( row: selection.row, col: newCol ) {
+                    moveTo( row: selection.row, col: 0 )
+                    moveDown()
+                }
+                return nil
+            case NSEvent.SpecialKey.backTab:
+                let newCol = ( selection.col - levelInfo.level ) / levelInfo.level * levelInfo.level
+                if !moveTo( row: selection.row, col: newCol ) {
+                    moveTo( row: selection.row, col: levelInfo.limit - levelInfo.level )
+                    moveUp()
+                }
+                return nil
+            case NSEvent.SpecialKey.carriageReturn, NSEvent.SpecialKey.newline, NSEvent.SpecialKey.enter:
+                moveTo( row: selection.row, col: 0 )
+                moveDown()
+                return nil
+            case NSEvent.SpecialKey.home:
+                moveTo( row: 0, col: 0 )
+                return nil
+            case NSEvent.SpecialKey.end:
+                let limit = levelInfo.limit
+                moveTo( row: limit - 1, col: limit - 1 )
+                return nil
+            default:
+                break
             }
         }
         return event
@@ -205,13 +245,13 @@ final class SudokuDocument: ReferenceFileDocument {
         guard let selection = selection else { return }
         guard let limit = level?.limit else { return }
         if moveTo( row: selection.row - 1, col: selection.col ) { return }
-        _ = moveTo( row: limit - 1, col: selection.col )
+        moveTo( row: limit - 1, col: selection.col )
     }
     
     func moveDown() -> Void {
         guard let selection = selection else { return }
-        if moveTo( row: selection.row + 1, col: selection.col + 1 ) { return }
-        _ = moveTo( row: 0, col: selection.col )
+        if moveTo( row: selection.row + 1, col: selection.col ) { return }
+        moveTo( row: 0, col: selection.col )
     }
     
     func moveLeft() -> Void {
@@ -219,13 +259,13 @@ final class SudokuDocument: ReferenceFileDocument {
         guard let limit = level?.limit else { return }
         if moveTo( row: selection.row, col: selection.col - 1 ) { return }
         if moveTo( row: selection.row - 1, col: limit - 1 ) { return }
-        _ = moveTo( row: limit - 1, col: limit - 1 )
+        moveTo( row: limit - 1, col: limit - 1 )
     }
 
     func moveRight() -> Void {
         guard let selection = selection else { return }
         if moveTo( row: selection.row, col: selection.col + 1 ) { return }
         if moveTo( row: selection.row + 1, col: 0 ) { return }
-        _ = moveTo( row: 0, col: 0 )
+        moveTo( row: 0, col: 0 )
     }
 }
