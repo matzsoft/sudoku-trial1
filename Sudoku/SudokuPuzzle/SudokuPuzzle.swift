@@ -29,7 +29,7 @@ struct SudokuPuzzle {
                 cell.solved == nil ? "." : ( levelInfo.symbol( from: cell.solved! ) ?? "." )
             }
             return String( line )
-        }.joined( separator: "\n" )
+        }.joined( separator: "\n" ) + "\n"
     }
     
     init( levelInfo: Level ) {

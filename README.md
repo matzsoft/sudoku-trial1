@@ -10,12 +10,12 @@ Still in early development.
 1. Can move the selection with the arrow keys.
 1. Speech verification of puzzles, including abort.
 1. Allow editing of the puzzle cells.
+1. Save an edited file to disk.
 
 ## TODO List
 For now, in no particular order, this is a list of things needed.
 
 1. I would like Cell and Drawer to know what SudokuPuzzle they belong to without sacrificing immutability.
-1. Save an edited file to disk.
 1. Allow graphics files as input, converting them to puzzles.
 1. A "show the solution" option.
 1. An interactive "solve the puzzle" mode.

@@ -43,7 +43,6 @@ class SpeechDelegate: NSObject, NSSpeechSynthesizerDelegate {
 final class SudokuDocument: ReferenceFileDocument {
     typealias Snapshot = Data
     
-    var text: String
     var puzzle: SudokuPuzzle?
     var isSpeaking = false
     var speechQueue: [ SpeechCommand ] = []
@@ -76,11 +75,9 @@ final class SudokuDocument: ReferenceFileDocument {
     }()
     
     init( text: String = "Hello, world!" ) {
-        self.text = text
     }
     
     init() {
-        text = "Goodbye, World!"
     }
 
     static var readableContentTypes: [UTType] { [.text] }
@@ -91,7 +88,6 @@ final class SudokuDocument: ReferenceFileDocument {
         else {
             throw CocoaError( .fileReadCorruptFile )
         }
-        text = string
         let lines = string.split( separator: "\n" )
         let level = Int( sqrt( Double( lines.count ) ) )
         
@@ -122,8 +118,7 @@ final class SudokuDocument: ReferenceFileDocument {
     }
     
     func fileWrapper( configuration: WriteConfiguration ) throws -> FileWrapper {
-        let data = text.data( using: .utf8 )!
-        return .init( regularFileWithContents: data )
+        return .init( regularFileWithContents: try snapshot( contentType: .text ) )
     }
     
     func image( cell: SudokuPuzzle.Cell ) -> NSImage {
