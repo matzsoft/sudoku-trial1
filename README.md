@@ -16,7 +16,7 @@ For now, in no particular order, this is a list of things needed.
 
 1. I would like Cell and Drawer to know what SudokuPuzzle they belong to without sacrificing immutability.
 1. Save an edited file to disk.
-1. Allow graphics files as input, coverting them to puzzles.
+1. Allow graphics files as input, converting them to puzzles.
 1. A "show the solution" option.
 1. An interactive "solve the puzzle" mode.
 1. Need to disable the Audio Verify menu item when no puzzles are open.
