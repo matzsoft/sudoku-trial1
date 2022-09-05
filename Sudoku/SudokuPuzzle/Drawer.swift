@@ -16,10 +16,10 @@ extension SudokuPuzzle {
         static let lineColor              = CGColor( red: 0, green: 0, blue: 0, alpha: 1 )
         static let textColor              = CGColor( red: 0, green: 0, blue: 0, alpha: 1 )
         
-        static let fatLine      = CGFloat( 5 )
-        static let thinLine     = CGFloat( 3 )
-        static let cellMargin   = CGFloat( 5 )
-        static let miniCellSize = CGFloat( 20 )
+        static let fatLine      = CGFloat( 2.5 )
+        static let thinLine     = CGFloat( 1.5 )
+        static let cellMargin   = CGFloat( 2.5 )
+        static let miniCellSize = CGFloat( 10 )
         static let penciledFont = setupFontAttributes( color: textColor, fontSize: miniCellSize )
 
         let cellSize:         CGFloat
@@ -134,7 +134,7 @@ extension SudokuPuzzle {
             draw( cell: cell, puzzle: puzzle, selection: selection, context: context )
             return NSImage(
                 cgImage: context.makeImage()!,
-                size: NSSize( width: width / 2, height: height / 2 )
+                size: NSSize( width: width, height: height )
             )
         }
         

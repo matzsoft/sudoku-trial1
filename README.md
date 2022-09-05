@@ -22,6 +22,6 @@ For now, in no particular order, this is a list of things needed.
 1. Need to disable the Audio Verify menu item when no puzzles are open.
 1. Properly indicate the document is "dirty" when edited.
 1. Try to draw the lines in ContentView.
-1. Solve the issue of different resolution betwee NSImage and CGImage.
-1. Prevent keyDown events going to all the windows.
 1. Have a way for Audio verify to start from the selection.
+1. Find what caused the weird blue square on a new 9x9 puzzle.
+1. New puzzles don't accept keyboard input until you click in them.
