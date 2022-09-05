@@ -11,6 +11,7 @@ struct ContentView: View {
     @ObservedObject var document: SudokuDocument
     @State private var needsLevel = true
     @State private var keyDownMonitor: Any?
+    @State private var window: NSWindow?
     
     var body: some View {
         VStack( alignment: .leading, spacing: 0 ) {
@@ -43,8 +44,11 @@ struct ContentView: View {
         .focusable()
         .onAppear() {
             needsLevel = document.needsLevel
+            DispatchQueue.main.async {
+                window = NSApp.windows.last
+            }
             keyDownMonitor = NSEvent.addLocalMonitorForEvents( matching: [.keyDown] ) {
-                return document.handleKeyEvent( event: $0 )
+                return $0.window == window ? document.handleKeyEvent( event: $0 ) : $0
             }
         }
         .onDisappear() {
