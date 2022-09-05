@@ -19,15 +19,17 @@ extension SudokuPuzzle {
         }
 
         var solved: Int?
-        var penciled: [Int] = []
+        var penciled = Set<Int>()
         let row: Int
         let col: Int
+        let block: Int
         
-        init( solved: Int? = nil, penciled: [Int] = [], row: Int, col: Int) {
+        init( solved: Int? = nil, penciled: Set<Int> = [], row: Int, col: Int ) {
             self.solved = solved
             self.penciled = penciled
             self.row = row
             self.col = col
+            self.block = 0                  // Need level to be able to set this properly.
         }
         
         func speechString( puzzle: SudokuPuzzle ) -> String {

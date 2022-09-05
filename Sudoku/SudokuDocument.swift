@@ -49,6 +49,7 @@ final class SudokuDocument: ReferenceFileDocument {
     var speechDelegate: SpeechDelegate?
 
     @Published var selection: SudokuPuzzle.Cell?
+    @Published var penciledCount = 0
     
     var level: SudokuPuzzle.Level? {
         get { puzzle?.levelInfo }
@@ -176,7 +177,9 @@ final class SudokuDocument: ReferenceFileDocument {
     }
 
     func handleKeyEvent( event: NSEvent ) -> NSEvent? {
-        guard let characters = event.characters else { return event }
+        if event.modifierFlags.contains( .command ) { return event }
+        if event.modifierFlags.contains( .option ) { return event }
+        guard let characters = event.charactersIgnoringModifiers else { return event }
         guard let selection = selection else { return event }
         guard let levelInfo = level else { return event }
 
@@ -184,9 +187,18 @@ final class SudokuDocument: ReferenceFileDocument {
             let character = characters.uppercased().first!
             
             if let index = levelInfo.index( from: character ) {
-                selection.solved = index
-                moveRight()
-                return nil
+                if !event.modifierFlags.contains( .control ) {
+                    selection.solved = index
+                    moveRight()
+                    return nil
+                } else {
+                    if selection.solved != nil { return event }
+                    if !selection.penciled.insert( index ).inserted {
+                        selection.penciled.remove( index )
+                    }
+                    penciledCount = puzzle!.penciledCount
+                    return nil
+                }
             }
             
             if character == "." || character == " " {
