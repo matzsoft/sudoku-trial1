@@ -127,6 +127,16 @@ final class SudokuDocument: ReferenceFileDocument {
         return puzzle.drawer.image( cell: cell, puzzle: puzzle, selection: selection )
     }
     
+    func line( row: Int ) -> NSImage {
+        guard let puzzle = puzzle else { return NSImage( named: NSImage.cautionName )! }
+        return puzzle.drawer.line( row: row )
+    }
+    
+    func line( col: Int ) -> NSImage {
+        guard let puzzle = puzzle else { return NSImage( named: NSImage.cautionName )! }
+        return puzzle.drawer.line( col: col )
+    }
+    
     @discardableResult func moveTo( row: Int, col: Int ) -> Bool {
         guard 0 <= row && row < rows.count else { return false }
         guard 0 <= col && col < rows[0].count else { return false }

@@ -15,14 +15,18 @@ struct ContentView: View {
     
     var body: some View {
         VStack( alignment: .leading, spacing: 0 ) {
-            ForEach( document.rows ) { row in
+            ForEach( 0 ..< document.rows.count, id: \.self ) { rowIndex in
+                Image( nsImage: document.line( row: rowIndex ) )
                 HStack( alignment: .top, spacing: 0 ) {
-                    ForEach( row ) { cell in
-                        Image( nsImage: document.image( cell: cell ) )
-                            .onTapGesture { document.selection = cell }
+                    ForEach( 0 ..< document.rows[rowIndex].count, id: \.self ) { colIndex in
+                        Image( nsImage: document.line( col: colIndex ) )
+                        Image( nsImage: document.image( cell: document.rows[rowIndex][colIndex] ) )
+                            .onTapGesture { document.selection = document.rows[rowIndex][colIndex] }
                     }
+                    Image( nsImage: document.line( col: 0 ) )
                 }
             }
+            Image( nsImage: document.line( row: 0 ) )
         }
         .padding()
         .background( LinearGradient(
