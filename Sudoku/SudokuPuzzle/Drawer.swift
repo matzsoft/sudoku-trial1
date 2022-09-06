@@ -116,10 +116,7 @@ extension SudokuPuzzle {
             context.setFillColor( Drawer.lineColor )
             context.fill( CGRect( x: 0, y: 0, width: puzzleSize, height: height ) )
             
-            return NSImage(
-                cgImage: context.makeImage()!,
-                size: NSSize( width: puzzleSize, height: height )
-            )
+            return NSImage( cgImage: context.makeImage()!, size: imageSize )
         }
         
         func line( col: Int ) -> NSImage {
@@ -133,10 +130,7 @@ extension SudokuPuzzle {
             context.setFillColor( Drawer.lineColor )
             context.fill( CGRect( x: 0, y: 0, width: width, height: cellSize ) )
             
-            return NSImage(
-                cgImage: context.makeImage()!,
-                size: NSSize( width: width, height: cellSize )
-            )
+            return NSImage( cgImage: context.makeImage()!, size: imageSize )
         }
         
         func image( cell: Cell, puzzle: SudokuPuzzle, selection: Cell? ) -> NSImage {
