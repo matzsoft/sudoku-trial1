@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Environment( \.undoManager ) var undoManager
     @ObservedObject var document: SudokuDocument
     @State private var needsLevel = true
     @State private var keyDownMonitor: Any?
@@ -32,23 +33,24 @@ struct ContentView: View {
             startPoint: .topLeading,
             endPoint: .bottomTrailing
             )
-            .confirmationDialog( "Puzzle Level", isPresented: $needsLevel ) {
-                ForEach( SudokuPuzzle.supportedLevels, id: \.self ) { level in
-                    Button( level.label ) { document.level = level; needsLevel = false }
-                }
-            }
-            message: {
-                Text( "Select your puzzle size" )
-            }
         )
+        .confirmationDialog( "Puzzle Level", isPresented: $needsLevel ) {
+            ForEach( SudokuPuzzle.supportedLevels, id: \.self ) { level in
+                Button( level.label ) { document.level = level; needsLevel = false }
+            }
+        }
+        message: {
+            Text( "Select your puzzle size" )
+        }
         .focusable()
         .onAppear() {
             needsLevel = document.needsLevel
             DispatchQueue.main.async {
                 window = NSApp.windows.last
             }
-            keyDownMonitor = NSEvent.addLocalMonitorForEvents( matching: [.keyDown] ) {
-                return $0.window == window ? document.handleKeyEvent( event: $0 ) : $0
+            keyDownMonitor = NSEvent.addLocalMonitorForEvents( matching: [.keyDown] ) { event in
+                guard event.window == window else { return event }
+                return document.handleKeyEvent( event: event, undoManager: undoManager )
             }
         }
         .onDisappear() {

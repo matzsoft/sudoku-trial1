@@ -12,7 +12,7 @@ import SwiftUI
 struct SudokuPuzzle {
     static let supportedLevels = [
         Level( level: 3, label: "9x9" ),
-        Level( level: 4, label: "16x16")
+        Level( level: 4, label: "16x16" )
     ]
     
     let levelInfo: Level

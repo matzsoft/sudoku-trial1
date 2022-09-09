@@ -63,10 +63,10 @@ final class SudokuDocument: ReferenceFileDocument {
         let synthesizer = NSSpeechSynthesizer()
         let voices = NSSpeechSynthesizer.availableVoices
         let desiredVoiceName = "com.apple.speech.synthesis.voice.Alex"
-        let desiredVoice = NSSpeechSynthesizer.VoiceName(rawValue: desiredVoiceName)
+        let desiredVoice = NSSpeechSynthesizer.VoiceName( rawValue: desiredVoiceName )
         
-        if let voice = voices.first(where: { $0 == desiredVoice } ) {
-            synthesizer.setVoice(voice)
+        if let voice = voices.first( where: { $0 == desiredVoice } ) {
+            synthesizer.setVoice( voice )
         }
         
         synthesizer.usesFeedbackWindow = true
@@ -176,7 +176,7 @@ final class SudokuDocument: ReferenceFileDocument {
         return wasSpeaking
     }
 
-    func handleKeyEvent( event: NSEvent ) -> NSEvent? {
+    func handleKeyEvent( event: NSEvent, undoManager: UndoManager? ) -> NSEvent? {
         if event.modifierFlags.contains( .command ) { return event }
         if event.modifierFlags.contains( .option ) { return event }
         guard let characters = event.charactersIgnoringModifiers else { return event }
@@ -188,6 +188,13 @@ final class SudokuDocument: ReferenceFileDocument {
             
             if let index = levelInfo.index( from: character ) {
                 if !event.modifierFlags.contains( .control ) {
+                    let oldValue = selection.solved
+                    if oldValue != index {
+                        undoManager?.registerUndo( withTarget: self ) { document in
+                            document.selection = selection
+                            selection.solved = oldValue
+                        }
+                    }
                     selection.solved = index
                     moveRight()
                     return nil
